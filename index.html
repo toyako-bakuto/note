@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>CatatanKu - Auto Save ke Server | Default Theme</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        /* DEFAULT THEME - NETRAL */
+        :root {
+            --bg-body: #f5f5f5;
+            --bg-card: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --border-light: #e5e7eb;
+            --accent-primary: #3b82f6;
+            --accent-dark: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --code-bg: #1e1e2f;
+            --code-text: #f8f8f2;
+            --code-border: #334155;
+        }
+
+        body {
+            background: var(--bg-body);
+            color: var(--text-primary);
+            transition: background 0.2s, color 0.2s;
+            line-height: 1.5;
+        }
+
+        body.dark {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border-light: #334155;
+            --code-bg: #0f0f1a;
+            --code-text: #e2e8f0;
+            background: var(--bg-body);
+            color: var(--text-primary);
+        }
+
+        .header {
+            background: var(--bg-card);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-light);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 0.5rem 1rem 0.5rem 2.2rem;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            width: 220px;
+            font-size: 0.9rem;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .search-box span {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.6;
+        }
+
+        select, .btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--bg-card);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        select:hover, .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent-primary);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-dark);
+        }
+
+        .category-banner {
+            max-width: 1400px;
+            margin: 1.5rem auto 0;
+            padding: 0 2rem;
+        }
+
+        .category-card {
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .category-tag {
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--accent-primary);
+        }
+
+        body.dark .stat-number {
+            color: #60a5fa;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        .btn-reset {
+            padding: 0.4rem 1.2rem;
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            background: var(--bg-card);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: var(--accent-soft);
+            border-color: var(--accent-primary);
+        }
+
+        .notes-grid {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .note-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .note-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent-primary);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .category-badge {
+            font-size: 0.7rem;
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+            padding: 0.25rem 0.9rem;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        body.dark .category-badge {
+            background: #2563eb;
+            color: #dbeafe;
+        }
+
+        .fundamental-badge {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .nonfundamental-badge {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        body.dark .fundamental-badge {
+            background: #166534;
+            color: #bbf7d0;
+        }
+        body.dark .nonfundamental-badge {
+            background: #334155;
+            color: #cbd5e1;
+        }
+        .fundamental-badge, .nonfundamental-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.8rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .pin-icon, .favorite-icon {
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+            padding: 0 3px;
+        }
+        .pin-icon:hover, .favorite-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .note-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 0.2rem 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .note-preview {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .understanding-inline {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 0.25rem;
+            font-size: 0.7rem;
+            flex-wrap: wrap;
+        }
+
+        .understand-badge {
+            background: #dcfce7;
+            color: #166534;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        .notunderstand-badge {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        body.dark .understand-badge {
+            background: #14532d;
+            color: #bbf7d0;
+        }
+        body.dark .notunderstand-badge {
+            background: #7f1a1a;
+            color: #fecaca;
+        }
+
+        .note-footer {
+            font-size: 0.7rem;
+            opacity: 0.5;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+        }
+
+        .deadline-badge {
+            font-size: 0.65rem;
+            background: #fef3c7;
+            color: #b45309;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            display: inline-block;
+            animation: softPulse 1.2s infinite;
+        }
+        body.dark .deadline-badge {
+            background: #b45309;
+            color: #ffedd5;
+        }
+        @keyframes softPulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; box-shadow: 0 0 0 3px rgba(59,130,246,0.2);}
+        }
+
+        .highlight {
+            background-color: #fef08a;
+            color: #1f2937;
+            border-radius: 4px;
+            padding: 0 2px;
+            font-weight: 500;
+        }
+        body.dark .highlight {
+            background-color: #854d0e;
+            color: #fef08a;
+        }
+
+        .empty-state {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+        }
+
+        /* ENHANCED CODE VIEWER */
+        .code-viewer {
+            margin: 1rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+            background: var(--code-bg);
+        }
+        .code-header {
+            background: rgba(0,0,0,0.3);
+            padding: 0.6rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--code-border);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .code-lang {
+            font-size: 0.7rem;
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+        .copy-code-btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 0.3rem 1rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .copy-code-btn:hover {
+            background: var(--accent-dark);
+            transform: scale(1.02);
+        }
+        pre {
+            margin: 0;
+            padding: 1rem;
+            overflow-x: auto;
+            background: var(--code-bg);
+            color: var(--code-text);
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            tab-size: 4;
+        }
+        code {
+            font-family: inherit;
+        }
+        /* Line numbers style */
+        .line-numbers {
+            display: inline-block;
+            text-align: right;
+            padding-right: 1rem;
+            user-select: none;
+            opacity: 0.6;
+            border-right: 1px solid #475569;
+            margin-right: 1rem;
+        }
+
+        /* MODAL DENGAN TOMBOL NEXT & PREV */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+        .modal.hidden { display: none; }
+
+        .modal-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            max-width: 950px;
+            width: 100%;
+        }
+
+        .nav-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: var(--text-primary);
+            flex-shrink: 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+            transform: scale(1.05);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.8rem 2rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-light);
+        }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-group label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            margin-bottom: 0.35rem;
+            display: block;
+            color: var(--text-primary);
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            transition: 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        textarea.form-control {
+            min-height: 90px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            margin-top: 0.3rem;
+            flex-wrap: wrap;
+        }
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .view-meta {
+            background: var(--accent-soft);
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.8rem;
+        }
+        body.dark .view-meta {
+            background: #0f172a;
+        }
+        .meta-key {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            opacity: 0.6;
+            letter-spacing: 0.5px;
+        }
+        .meta-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .understanding-box {
+            display: grid;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .understanding-item {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 12px;
+        }
+        body.dark .understanding-item {
+            background: #0f172a;
+        }
+        .understanding-item strong {
+            font-size: 0.75rem;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--accent-primary);
+        }
+
+        .latihan-box {
+            background: #fef9e3;
+            border-left: 4px solid #eab308;
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+        body.dark .latihan-box {
+            background: #2d2a1a;
+            border-left-color: #eab308;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: flex-end;
+            margin-top: 1.8rem;
+        }
+        .btn-action {
+            padding: 0.6rem 1.3rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .btn-save { background: var(--accent-primary); color: white; }
+        .btn-save:hover { background: var(--accent-dark); }
+        .btn-cancel { background: #e2e8f0; color: #1e293b; }
+        .dark .btn-cancel { background: #334155; color: #f1f5f9; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+
+        .toast {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: fadeInOut 2.5s ease;
+            font-weight: 500;
+            box-shadow: var(--shadow-md);
+        }
+        .toast.error {
+            background: #ef4444;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(20px); }
+        }
+
+        .sync-status, .auto-save-indicator {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            background: #e2e8f0;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        body.dark .sync-status, body.dark .auto-save-indicator {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        .sync-status.synced {
+            background: #10b981;
+            color: white;
+        }
+
+        @media (max-width: 680px) {
+            .notes-grid { padding: 0 1rem; gap: 1rem; }
+            .stats { gap: 1rem; }
+            .toolbar .btn, .toolbar select { font-size: 0.75rem; padding: 0.4rem 0.7rem; }
+            .nav-btn { width: 40px; height: 40px; font-size: 1.2rem; }
+            .modal-container { gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-container">
+            <div class="logo">
+                <span>📝</span>
+                <span>CATATANKU</span>
+                <span id="syncStatus" class="sync-status">☁️ Auto-Save</span>
+                <span class="auto-save-indicator" id="autoSaveIndicator">💾 Real-time</span>
+            </div>
+            <div class="toolbar">
+                <div class="search-box"><span>🔍</span><input type="text" id="searchInput" placeholder="Cari catatan..."></div>
+                <select id="categorySelect"><option value="ALL">Semua Kategori</option></select>
+                <select id="understandingFilter"><option value="ALL">Semua Pemahaman</option><option value="paham">✅ Paham</option><option value="belum">❌ Belum</option></select>
+                <select id="sortBy"><option value="default">📌 Default (Pin)</option><option value="newest">🆕 Terbaru</option><option value="oldest">📅 Terlama</option><option value="title">🔤 A-Z</option></select>
+                <button class="btn" id="themeToggle">🌙</button>
+                <button class="btn" id="exportBtn">📤 Ekspor</button>
+                <button class="btn" id="importBtn">📥 Impor</button>
+                <button class="btn btn-primary" id="addNoteBtn">+ Baru</button>
+                <button class="btn" id="manualSaveBtn" style="background:#10b981;color:white;">💾 Simpan Manual</button>
+                <button class="btn" id="loadFromServerBtn" style="background:#3b82f6;color:white;">📥 Muat Data</button>
+                <input type="file" id="fileInput" hidden>
+            </div>
+        </div>
+    </div>
+
+    <div class="category-banner">
+        <div class="category-card">
+            <div class="category-tag" id="selectedCategoryLabel">Semua Kategori</div>
+            <div class="stats">
+                <div class="stat-item"><div class="stat-number" id="totalNotes">0</div><div class="stat-label">Total Catatan</div></div>
+                <div class="stat-item"><div class="stat-number" id="pinnedNotes">0</div><div class="stat-label">Disematkan</div></div>
+                <div class="stat-item"><div class="stat-number" id="streakCount">0</div><div class="stat-label">🔥 Streak</div></div>
+                <div class="stat-item"><div class="stat-number" id="comprehensionPercent">0%</div><div class="stat-label">Pemahaman</div></div>
+            </div>
+            <button class="btn-reset" id="resetFilter">Reset Filter</button>
+        </div>
+    </div>
+
+    <div id="notesGrid" class="notes-grid"></div>
+
+    <!-- Modal Edit -->
+    <div id="editModal" class="modal hidden"><div class="modal-content"><div class="modal-title" id="modalTitle">Tambah Catatan</div>
+        <div class="form-group"><label>📌 Judul (wajib)</label><input type="text" id="noteTitle" class="form-control" placeholder="Contoh: Belajar React Hooks"></div>
+        <div class="form-group"><label>🗂️ Kategori</label><select id="noteCategory" class="form-control"><option value="Umum">Umum</option><option>HTML</option><option>CSS</option><option>JavaScript</option><option>React</option><option>Python</option><option>Database</option></select></div>
+        <div class="form-group"><label>⏰ Deadline (opsional)</label><input type="datetime-local" id="noteDeadline" class="form-control"></div>
+        <div class="form-group"><label>✅ Yang dipahami</label><textarea id="noteUnderstand" class="form-control" rows="2" placeholder="Apa yang sudah kamu kuasai?"></textarea></div>
+        <div class="form-group"><label>❌ Yang belum dipahami</label><textarea id="noteNotUnderstand" class="form-control" rows="2" placeholder="Area yang masih membingungkan..."></textarea></div>
+        <div class="form-group"><label>🏋️ Latihan / Tugas Praktik</label><textarea id="noteLatihan" class="form-control" rows="2" placeholder="Contoh latihan yang sudah/sedang dikerjakan"></textarea></div>
+        <div class="form-group"><label>📝 Contoh Program / Kode (Enhanced viewer)</label><textarea id="noteProgramCode" class="form-control" rows="4" placeholder="Tulis potongan kode di sini. Akan ditampilkan dengan syntax highlighting dan line numbers."></textarea></div>
+        <div class="form-group"><label>🏷️ Kata Kunci</label><input type="text" id="noteKeywords" class="form-control" placeholder="react, hooks, state"></div>
+        <div class="form-group"><div class="radio-group"><label class="radio-label"><input type="radio" name="understanding" value="paham"> ✅ Paham</label><label class="radio-label"><input type="radio" name="understanding" value="belum"> ❌ Belum Paham</label></div></div>
+        <div class="form-group"><div class="radio-group"><label class="radio-label"><input type="radio" name="fundamentalType" value="fundamental"> ⭐ Fundamental</label><label class="radio-label"><input type="radio" name="fundamentalType" value="nonfundamental"> 📘 Non-Fundamental</label></div></div>
+        <div class="modal-actions"><button class="btn-action btn-cancel" id="cancelEdit">Batal</button><button class="btn-action btn-save" id="saveNote">Simpan Catatan</button></div>
+    </div></div>
+
+    <!-- Modal View dengan NEXT & PREV -->
+    <div id="viewModal" class="modal hidden">
+        <div class="modal-container">
+            <button class="nav-btn" id="prevNoteBtn" title="Sebelumnya">◀</button>
+            <div class="modal-content" id="viewModalContent">
+                <div id="noteDetailView"></div>
+            </div>
+            <button class="nav-btn" id="nextNoteBtn" title="Selanjutnya">▶</button>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            let notes = [];
+            let selectedCategory = 'ALL', understandingFilter = 'ALL', sortBy = 'default', editingIndex = null;
+            let autoSaveTimeout = null;
+            let currentViewIndex = 0;
+            let currentFilteredNotes = [];
+            
+            const SERVER_URL = 'https://note.jonathananandar.fun';
+            const DATA_URL = `${SERVER_URL}/data.json`, SAVE_URL = `${SERVER_URL}/save-data.php`;
+            
+            const els = {
+                notesGrid: document.getElementById('notesGrid'), searchInput: document.getElementById('searchInput'), categorySelect: document.getElementById('categorySelect'),
+                understandingFilter: document.getElementById('understandingFilter'), sortBySelect: document.getElementById('sortBy'),
+                selectedCategoryLabel: document.getElementById('selectedCategoryLabel'), totalNotes: document.getElementById('totalNotes'),
+                pinnedNotes: document.getElementById('pinnedNotes'), streakCount: document.getElementById('streakCount'),
+                comprehensionPercent: document.getElementById('comprehensionPercent'), resetFilter: document.getElementById('resetFilter'),
+                themeToggle: document.getElementById('themeToggle'), addNoteBtn: document.getElementById('addNoteBtn'),
+                editModal: document.getElementById('editModal'), viewModal: document.getElementById('viewModal'),
+                noteTitle: document.getElementById('noteTitle'), noteCategory: document.getElementById('noteCategory'),
+                noteDeadline: document.getElementById('noteDeadline'), noteUnderstand: document.getElementById('noteUnderstand'),
+                noteNotUnderstand: document.getElementById('noteNotUnderstand'), noteLatihan: document.getElementById('noteLatihan'),
+                noteProgramCode: document.getElementById('noteProgramCode'), noteKeywords: document.getElementById('noteKeywords'),
+                cancelEdit: document.getElementById('cancelEdit'), saveNote: document.getElementById('saveNote'),
+                exportBtn: document.getElementById('exportBtn'), importBtn: document.getElementById('importBtn'),
+                manualSaveBtn: document.getElementById('manualSaveBtn'), loadFromServerBtn: document.getElementById('loadFromServerBtn'),
+                fileInput: document.getElementById('fileInput'), syncStatus: document.getElementById('syncStatus'),
+                autoSaveIndicator: document.getElementById('autoSaveIndicator'),
+                prevNoteBtn: document.getElementById('prevNoteBtn'), nextNoteBtn: document.getElementById('nextNoteBtn')
+            };
+            const understandingRadios = document.querySelectorAll('input[name="understanding"]');
+            const fundamentalRadios = document.querySelectorAll('input[name="fundamentalType"]');
+
+            function showToast(m, err=false){ let t=document.createElement('div'); t.className='toast'; t.textContent=m; if(err) t.classList.add('error'); document.body.appendChild(t); setTimeout(()=>t.remove(),2500);}
+            function escapeHTML(s){ return s ? s.replace(/[&<>]/g, m=> m==='&'? '&amp;' : m==='<'? '&lt;' : '&gt;') : ''; }
+            function highlightText(t,k){ if(!k||!t) return escapeHTML(t); let r=new RegExp(`(${k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'); return escapeHTML(t).replace(r,'<span class="highlight">$1</span>'); }
+            function isDeadlineSoon(d){ if(!d) return false; let diff = new Date(d)-new Date(); return diff>0 && diff<86400000; }
+            
+            // Enhanced Code Formatter with line numbers and language detection
+            function formatCodeBlock(code) {
+                if (!code || !code.trim()) return '';
+                let trimmed = code.trimEnd();
+                let lines = trimmed.split(/\r?\n/);
+                let lineNumbersHtml = lines.map((_, idx) => `<span class="line-numbers">${idx+1}</span>`).join('');
+                let codeHtml = lines.map(line => escapeHTML(line)).join('\n');
+                let lang = 'auto';
+                if(/<\w+.*>/.test(trimmed)) lang = 'HTML';
+                else if(/function|const|let|=>/.test(trimmed)) lang = 'JavaScript';
+                else if(/def |class |import /.test(trimmed)) lang = 'Python';
+                else if(/SELECT|INSERT|UPDATE/.test(trimmed.toUpperCase())) lang = 'SQL';
+                return `
+                    <div class="code-viewer">
+                        <div class="code-header">
+                            <span class="code-lang">📄 ${lang}</span>
+                            <button class="copy-code-btn" onclick="copyFormattedCode(this)">📋 Salin Kode</button>
+                        </div>
+                        <pre><code>${codeHtml}</code></pre>
+                    </div>
+                `;
+            }
+            
+            window.copyFormattedCode = function(btn) {
+                const pre = btn.closest('.code-viewer').querySelector('pre code');
+                if(pre) {
+                    let rawCode = pre.innerText;
+                    navigator.clipboard.writeText(rawCode).then(() => {
+                        btn.textContent = '✅ Tersalin!';
+                        setTimeout(() => btn.textContent = '📋 Salin Kode', 1500);
+                    }).catch(() => showToast('Gagal menyalin', true));
+                }
+            };
+            
+            function updateSyncStatus(st,msg){ els.syncStatus.textContent=msg||st; els.syncStatus.className='sync-status'; if(st==='synced'){ els.syncStatus.classList.add('synced'); els.autoSaveIndicator.style.background='#10b981'; els.autoSaveIndicator.textContent='✓ Tersimpan'; setTimeout(()=>{ if(els.autoSaveIndicator.textContent==='✓ Tersimpan'){ els.autoSaveIndicator.style.background='#e2e8f0'; els.autoSaveIndicator.textContent='💾 Auto-Save'; }},2000); } else if(st==='syncing'){ els.autoSaveIndicator.style.background='#f59e0b'; els.autoSaveIndicator.textContent='💿 Menyimpan...'; } else if(st==='error'){ els.autoSaveIndicator.style.background='#ef4444'; els.autoSaveIndicator.textContent='⚠️ Gagal'; setTimeout(()=>{ if(els.autoSaveIndicator.textContent==='⚠️ Gagal'){ els.autoSaveIndicator.style.background='#e2e8f0'; els.autoSaveIndicator.textContent='💾 Auto-Save'; }},3000); } }
+            
+            async function saveToServer(){ try{ updateSyncStatus('syncing'); let res=await fetch(SAVE_URL+'?_cb='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:notes,timestamp:new Date().toISOString()})}); if(!res.ok) throw new Error(); let json=await res.json(); if(json.success){ showToast('✅ Tersimpan ke server'); updateSyncStatus('synced'); return true; } throw new Error(); }catch(e){ showToast('❌ Gagal simpan server',true); updateSyncStatus('error'); return false; } }
+            function autoSave(){ if(autoSaveTimeout) clearTimeout(autoSaveTimeout); autoSaveTimeout=setTimeout(()=>saveToServer(),1200); }
+            function saveToStorage(){ localStorage.setItem('notes',JSON.stringify(notes)); autoSave(); }
+            
+            async function loadFromServer(){ try{ updateSyncStatus('syncing','☁️ Memuat...'); let res=await fetch(DATA_URL+'?_cb='+Date.now(),{cache:'no-cache'}); if(!res.ok) throw new Error(); let data=await res.json(); if(Array.isArray(data) && data.length){ notes=data.map(n=>({...n, understand:n.understand||'', notUnderstand:n.notUnderstand||'', latihan:n.latihan||'', programCode:n.programCode||'', keywords:n.keywords||'', category:n.category||'Umum', understanding:n.understanding||'belum', fundamentalType:n.fundamentalType||'nonfundamental', pin:n.pin||false, favorite:n.favorite||false, deadline:n.deadline||null, created:n.created||new Date().toLocaleDateString('id-ID'), edited:n.edited||new Date().toLocaleDateString('id-ID') })); saveToStorage(); updateCategoryDropdown(); renderNotes(); showToast(`✅ ${notes.length} catatan dimuat dari server`); updateSyncStatus('synced'); return true; } else { showToast('Server kosong, mulai catatan baru',false); return false; } } catch(e){ showToast('Gagal muat dari server',true); updateSyncStatus('error'); return false; } }
+            
+            function getCategoryCount(){ let m=new Map(); notes.forEach(n=>{ let c=n.category||'Umum'; m.set(c,(m.get(c)||0)+1); }); return m; }
+            function updateCategoryDropdown(){ let cats=getCategoryCount(); let opts='<option value="ALL">📂 Semua Kategori</option>'; [...cats.keys()].sort().forEach(c=>opts+=`<option value="${c}">${c} (${cats.get(c)})</option>`); els.categorySelect.innerHTML=opts; if(selectedCategory!=='ALL') els.categorySelect.value=selectedCategory; els.selectedCategoryLabel.textContent=selectedCategory==='ALL'?'Semua Kategori':selectedCategory; }
+            function updateStats(){ let filtered=notes.filter(n=>selectedCategory==='ALL'||(n.category||'Umum')===selectedCategory); els.totalNotes.textContent=filtered.length; els.pinnedNotes.textContent=filtered.filter(n=>n.pin).length; let streak=[...new Set(notes.map(n=>n.created).filter(Boolean))].length; els.streakCount.textContent=streak; let paham=filtered.filter(n=>n.understanding==='paham').length; els.comprehensionPercent.textContent=filtered.length===0?'0%':Math.round((paham/filtered.length)*100)+'%'; }
+            function sortNotes(arr){ if(sortBy==='newest') return [...arr].sort((a,b)=>new Date(b.created)-new Date(a.created)); if(sortBy==='oldest') return [...arr].sort((a,b)=>new Date(a.created)-new Date(b.created)); if(sortBy==='title') return [...arr].sort((a,b)=>(a.title||'').localeCompare(b.title||'')); return [...arr].sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)); }
+            
+            function getFilteredSortedNotes() {
+                let kw = els.searchInput.value.toLowerCase().trim();
+                let filtered = notes.filter(n => (selectedCategory === 'ALL' || (n.category || 'Umum') === selectedCategory) &&
+                    (understandingFilter === 'ALL' || n.understanding === understandingFilter) &&
+                    (!kw || (n.title?.toLowerCase().includes(kw) || n.understand?.toLowerCase().includes(kw) || n.notUnderstand?.toLowerCase().includes(kw) || n.latihan?.toLowerCase().includes(kw) || n.keywords?.toLowerCase().includes(kw) || n.programCode?.toLowerCase().includes(kw))));
+                return sortNotes(filtered);
+            }
+            
+            window.toggleFavorite=(idx)=>{ notes[idx].favorite=!notes[idx].favorite; saveToStorage(); renderNotes(); showToast(notes[idx].favorite?'⭐ Favorit ditambahkan':'☆ Favorit dihapus'); };
+            window.togglePin=(idx)=>{ notes[idx].pin=!notes[idx].pin; saveToStorage(); renderNotes(); showToast(notes[idx].pin?'📌 Catatan disemat':'📍 Sematan dicabut'); };
+            
+            function renderDetailViewByIndex(index) {
+                const filteredNotes = getFilteredSortedNotes();
+                if (index < 0 || index >= filteredNotes.length) return;
+                const note = filteredNotes[index];
+                const originalIdx = notes.indexOf(note);
+                if (originalIdx === -1) return;
+                
+                currentViewIndex = index;
+                const n = note;
+                const deadlineText = n.deadline ? `⏰ Deadline: ${new Date(n.deadline).toLocaleString()}` : 'Tidak ada deadline';
+                const understandText = n.understanding === 'paham' ? '✅ Paham' : '❌ Belum Paham';
+                const codeHtml = n.programCode ? formatCodeBlock(n.programCode) : '<div style="padding:1rem;text-align:center;opacity:0.6;">📄 Tidak ada kode program</div>';
+                
+                document.getElementById('noteDetailView').innerHTML = `
+                    <div style="margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                            <h2 style="font-size:1.5rem;">${escapeHTML(n.title)}</h2>
+                            <span class="category-badge">${escapeHTML(n.category||'Umum')}</span>
+                            ${n.favorite ? '<span class="category-badge" style="background:#fbbf24;">⭐ Favorit</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="view-meta">
+                        <div><div class="meta-key">Dibuat</div><div class="meta-value">${n.created||'-'}</div></div>
+                        <div><div class="meta-key">Diedit</div><div class="meta-value">${n.edited||'-'}</div></div>
+                        <div><div class="meta-key">Pemahaman</div><div class="meta-value">${understandText}</div></div>
+                        <div><div class="meta-key">Jenis</div><div class="meta-value">${n.fundamentalType==='fundamental'?'⭐ Fundamental':'📘 Non-Fundamental'}</div></div>
+                        <div><div class="meta-key">Deadline</div><div class="meta-value">${deadlineText}</div></div>
+                    </div>
+                    <div class="understanding-box">
+                        <div class="understanding-item"><strong>✅ Yang dipahami</strong><div style="white-space:pre-line;">${escapeHTML(n.understand||'-')}</div></div>
+                        <div class="understanding-item"><strong>❌ Yang tidak dipahami</strong><div style="white-space:pre-line;">${escapeHTML(n.notUnderstand||'-')}</div></div>
+                    </div>
+                    ${n.latihan ? `<div class="latihan-box"><strong>🏋️ Latihan / Tugas</strong><div style="white-space:pre-line;">${escapeHTML(n.latihan)}</div></div>` : ''}
+                    <div><strong>💻 Contoh Program / Kode</strong> ${codeHtml}</div>
+                    ${n.keywords ? `<div style="background:#f1f5f9; border-radius:12px; padding:0.8rem; margin-top:0.8rem;"><strong>🏷️ Kata Kunci:</strong> ${escapeHTML(n.keywords)}</div>` : ''}
+                    <div class="modal-actions">
+                        <button class="btn-action btn-cancel" onclick="closeView()">Tutup</button>
+                        <button class="btn-action btn-save" onclick="editNoteFromView(${originalIdx})">Edit</button>
+                        <button class="btn-action btn-danger" onclick="deleteNoteFromView(${originalIdx})">Hapus</button>
+                    </div>
+                `;
+                els.prevNoteBtn.disabled = (currentViewIndex === 0);
+                els.nextNoteBtn.disabled = (currentViewIndex === filteredNotes.length - 1);
+            }
+            
+            function navigatePrev() { if (currentViewIndex > 0) renderDetailViewByIndex(currentViewIndex - 1); }
+            function navigateNext() { const filtered = getFilteredSortedNotes(); if (currentViewIndex < filtered.length - 1) renderDetailViewByIndex(currentViewIndex + 1); }
+            
+            function openNoteFromCard(originalIdx) {
+                const filteredNotes = getFilteredSortedNotes();
+                const targetNote = notes[originalIdx];
+                const position = filteredNotes.findIndex(n => n === targetNote);
+                if (position !== -1) {
+                    renderDetailViewByIndex(position);
+                    els.viewModal.classList.remove('hidden');
+                } else {
+                    currentViewIndex = 0;
+                    renderDetailViewByIndex(0);
+                    els.viewModal.classList.remove('hidden');
+                }
+            }
+            
+            window.editNoteFromView = function(originalIdx) { editNote(originalIdx); };
+            window.deleteNoteFromView = function(originalIdx) {
+                if (confirm('Yakin hapus catatan ini?')) {
+                    notes.splice(originalIdx, 1);
+                    saveToStorage();
+                    if (selectedCategory !== 'ALL' && !notes.some(n => (n.category || 'Umum') === selectedCategory)) selectedCategory = 'ALL';
+                    updateCategoryDropdown();
+                    renderNotes();
+                    els.viewModal.classList.add('hidden');
+                    showToast('Catatan terhapus');
+                }
+            };
+            window.editNote = function(idx) {
+                let n = notes[idx];
+                editingIndex = idx;
+                els.noteTitle.value = n.title || '';
+                els.noteCategory.value = n.category || '';
+                els.noteDeadline.value = n.deadline || '';
+                els.noteUnderstand.value = n.understand || '';
+                els.noteNotUnderstand.value = n.notUnderstand || '';
+                els.noteLatihan.value = n.latihan || '';
+                els.noteProgramCode.value = n.programCode || '';
+                els.noteKeywords.value = n.keywords || '';
+                understandingRadios.forEach(r => r.checked = r.value === (n.understanding || 'belum'));
+                fundamentalRadios.forEach(r => r.checked = r.value === (n.fundamentalType || 'nonfundamental'));
+                document.getElementById('modalTitle').textContent = 'Edit Catatan';
+                els.viewModal.classList.add('hidden');
+                els.editModal.classList.remove('hidden');
+            };
+            window.closeView = function() { els.viewModal.classList.add('hidden'); };
+            
+            function renderNotes() {
+                if (!notes.length) {
+                    els.notesGrid.innerHTML = `<div class="empty-state"><div>📭</div><h3>Belum ada catatan</h3><p>Klik + Baru untuk mulai mencatat</p></div>`;
+                    updateStats();
+                    return;
+                }
+                let kw = els.searchInput.value.toLowerCase().trim();
+                let filtered = notes.filter(n => (selectedCategory === 'ALL' || (n.category || 'Umum') === selectedCategory) &&
+                    (understandingFilter === 'ALL' || n.understanding === understandingFilter) &&
+                    (!kw || (n.title?.toLowerCase().includes(kw) || n.understand?.toLowerCase().includes(kw) || n.notUnderstand?.toLowerCase().includes(kw) || n.latihan?.toLowerCase().includes(kw) || n.keywords?.toLowerCase().includes(kw) || n.programCode?.toLowerCase().includes(kw))));
+                filtered = sortNotes(filtered);
+                if (!filtered.length) {
+                    els.notesGrid.innerHTML = `<div class="empty-state"><div>🔍</div><h3>Tidak ditemukan</h3></div>`;
+                    updateStats();
+                    return;
+                }
+                els.notesGrid.innerHTML = filtered.map(n => {
+                    let realIdx = notes.indexOf(n);
+                    let preview = (n.understand || n.latihan || n.programCode || 'Belum ada isi').substring(0, 85);
+                    return `<div class="note-card" data-id="${realIdx}">
+                        <div class="note-header">
+                            <span class="category-badge">${escapeHTML(n.category || 'Umum')}</span>
+                            <div>
+                                <span class="favorite-icon" onclick="event.stopPropagation(); window.toggleFavorite(${realIdx})">${n.favorite ? '⭐' : '☆'}</span>
+                                <span class="pin-icon" onclick="event.stopPropagation(); window.togglePin(${realIdx})">${n.pin ? '📌' : '📍'}</span>
+                            </div>
+                        </div>
+                        <div class="note-title">${highlightText(n.title || 'Tanpa Judul', kw)}</div>
+                        ${isDeadlineSoon(n.deadline) ? '<div class="deadline-badge">⚠️ Deadline mendekat!</div>' : ''}
+                        <div class="note-preview">📘 ${highlightText(preview, kw)}</div>
+                        <div class="understanding-inline">
+                            <span class="${n.understanding === 'paham' ? 'understand-badge' : 'notunderstand-badge'}">${n.understanding === 'paham' ? '✅ Paham' : '❌ Belum Paham'}</span>
+                            <span class="${n.fundamentalType === 'fundamental' ? 'fundamental-badge' : 'nonfundamental-badge'}">${n.fundamentalType === 'fundamental' ? '⭐ Fundamental' : '📘 Non-Fundamental'}</span>
+                        </div>
+                        <div class="note-footer"><span>🕒 ${n.created || '-'}</span>${n.edited !== n.created ? '<span>✏️ diedit</span>' : ''}</div>
+                    </div>`;
+                }).join('');
+                document.querySelectorAll('.note-card').forEach(c => c.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('pin-icon') && !e.target.classList.contains('favorite-icon')) {
+                        openNoteFromCard(parseInt(c.dataset.id));
+                    }
+                }));
+                updateStats();
+            }
+            
+            els.addNoteBtn.addEventListener('click', () => {
+                editingIndex = null;
+                els.noteTitle.value = '';
+                els.noteCategory.value = '';
+                els.noteDeadline.value = '';
+                els.noteUnderstand.value = '';
+                els.noteNotUnderstand.value = '';
+                els.noteLatihan.value = '';
+                els.noteProgramCode.value = '';
+                els.noteKeywords.value = '';
+                understandingRadios.forEach(r => r.checked = r.value === 'paham');
+                fundamentalRadios.forEach(r => r.checked = r.value === 'nonfundamental');
+                document.getElementById('modalTitle').textContent = 'Tambah Catatan';
+                els.editModal.classList.remove('hidden');
+            });
+            els.cancelEdit.addEventListener('click', () => els.editModal.classList.add('hidden'));
+            els.saveNote.addEventListener('click', () => {
+                if (!els.noteTitle.value.trim()) { alert('Judul wajib diisi'); return; }
+                let now = new Date().toLocaleDateString('id-ID');
+                let understanding = [...understandingRadios].find(r => r.checked)?.value || 'belum';
+                let fundamentalType = [...fundamentalRadios].find(r => r.checked)?.value || 'nonfundamental';
+                let newNote = {
+                    title: els.noteTitle.value, category: els.noteCategory.value || 'Umum', deadline: els.noteDeadline.value || null,
+                    understand: els.noteUnderstand.value, notUnderstand: els.noteNotUnderstand.value, latihan: els.noteLatihan.value,
+                    programCode: els.noteProgramCode.value, keywords: els.noteKeywords.value, pin: false, favorite: false,
+                    created: now, edited: now, understanding, fundamentalType
+                };
+                if (editingIndex !== null) {
+                    newNote.created = notes[editingIndex].created;
+                    newNote.pin = notes[editingIndex].pin;
+                    newNote.favorite = notes[editingIndex].favorite;
+                    notes[editingIndex] = newNote;
+                    showToast('Catatan diperbarui');
+                } else {
+                    notes.push(newNote);
+                    showToast('Catatan baru ditambahkan');
+                }
+                saveToStorage();
+                updateCategoryDropdown();
+                renderNotes();
+                els.editModal.classList.add('hidden');
+            });
+            
+            els.categorySelect.addEventListener('change', (e) => { selectedCategory = e.target.value; els.selectedCategoryLabel.textContent = selectedCategory === 'ALL' ? 'Semua Kategori' : selectedCategory; renderNotes(); });
+            els.understandingFilter.addEventListener('change', (e) => { understandingFilter = e.target.value; renderNotes(); });
+            els.sortBySelect.addEventListener('change', (e) => { sortBy = e.target.value; renderNotes(); });
+            els.resetFilter.addEventListener('click', () => { selectedCategory = 'ALL'; understandingFilter = 'ALL'; sortBy = 'default'; els.categorySelect.value = 'ALL'; els.understandingFilter.value = 'ALL'; els.sortBySelect.value = 'default'; els.searchInput.value = ''; els.selectedCategoryLabel.textContent = 'Semua Kategori'; renderNotes(); showToast('Semua filter direset'); });
+            els.searchInput.addEventListener('input', renderNotes);
+            els.themeToggle.addEventListener('click', () => { document.body.classList.toggle('dark'); els.themeToggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙'; });
+            els.exportBtn.addEventListener('click', () => { let a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(notes, null, 2)])); a.download = `catatan-${new Date().toISOString().slice(0, 10)}.json`; a.click(); showToast('Ekspor berhasil'); });
+            els.manualSaveBtn.addEventListener('click', saveToServer);
+            els.loadFromServerBtn.addEventListener('click', loadFromServer);
+            els.importBtn.addEventListener('click', () => els.fileInput.click());
+            els.fileInput.addEventListener('change', (e) => {
+                let file = e.target.files[0];
+                let reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        let imported = JSON.parse(reader.result);
+                        if (Array.isArray(imported)) {
+                            notes = imported.map(n => ({ ...n, understand: n.understand || '', notUnderstand: n.notUnderstand || '', latihan: n.latihan || '', programCode: n.programCode || '', understanding: n.understanding || 'belum', fundamentalType: n.fundamentalType || 'nonfundamental', deadline: n.deadline || null, favorite: n.favorite || false }));
+                            saveToStorage();
+                            selectedCategory = 'ALL'; understandingFilter = 'ALL'; sortBy = 'default'; els.searchInput.value = '';
+                            updateCategoryDropdown(); renderNotes(); showToast('Import sukses');
+                        } else alert('Format tidak sesuai');
+                    } catch (err) { alert('File rusak'); }
+                };
+                reader.readAsText(file);
+            });
+            
+            els.prevNoteBtn.addEventListener('click', navigatePrev);
+            els.nextNoteBtn.addEventListener('click', navigateNext);
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') { els.editModal.classList.add('hidden'); els.viewModal.classList.add('hidden'); }
+                if (!els.viewModal.classList.contains('hidden')) {
+                    if (e.key === 'ArrowLeft') navigatePrev();
+                    if (e.key === 'ArrowRight') navigateNext();
+                }
+            });
+            els.editModal.addEventListener('click', (e) => { if (e.target === els.editModal) els.editModal.classList.add('hidden'); });
+            els.viewModal.addEventListener('click', (e) => { if (e.target === els.viewModal) els.viewModal.classList.add('hidden'); });
+            
+            loadFromServer();
+        })();
+    </script>
+</body>
+</html>
