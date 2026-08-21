@@ -20,7 +20,7 @@ const state = {
   editorContentStore: { understand: "", notUnderstand: "", commonMistakes: "" },
   latihanQuillIdCounter: 0,
   programQuillIdCounter: 0,
-  myProgramQuillIdCounter: 0,  // TAMBAHAN: untuk Program Saya
+  myProgramQuillIdCounter: 0,
   breakfixQuillIdCounter: 0,
   currentNoteIndex: 0,
   isModalOpen: false,
@@ -369,7 +369,6 @@ function renderSingleNote(note) {
   const pin = n.pin ? "📌" : "";
   const fav = n.favorite ? "⭐" : "";
 
-  // Latihan
   let latihanHtml = "";
   if (n.latihans && n.latihans.length) {
     latihanHtml = n.latihans
@@ -400,7 +399,6 @@ function renderSingleNote(note) {
       .join("");
   }
 
-  // Break & Fix
   let breakfixHtml = "";
   if (n.breakfixs && n.breakfixs.length) {
     breakfixHtml = n.breakfixs
@@ -424,7 +422,6 @@ function renderSingleNote(note) {
       .join("");
   }
 
-  // Program
   let programHtml = "";
   if (n.programs && n.programs.length) {
     programHtml = n.programs
@@ -442,7 +439,7 @@ function renderSingleNote(note) {
       .join("");
   }
 
-  // ===== PROGRAM SAYA - TAMBAHAN BARU =====
+  // ===== PROGRAM SAYA =====
   let myProgramHtml = "";
   if (n.myPrograms && n.myPrograms.length) {
     myProgramHtml = n.myPrograms
@@ -665,7 +662,7 @@ function openEditModal(noteData = null, editId = null) {
     setLatihans(noteData.latihans || []);
     setBreakfixs(noteData.breakfixs || []);
     setPrograms(noteData.programs || []);
-    setMyPrograms(noteData.myPrograms || []);  // TAMBAHAN
+    setMyPrograms(noteData.myPrograms || []);
   } else {
     document.getElementById("noteTitle").value = "";
     document.getElementById("noteCategory").value = "Umum";
@@ -682,7 +679,7 @@ function openEditModal(noteData = null, editId = null) {
     setLatihans([]);
     setBreakfixs([]);
     setPrograms([]);
-    setMyPrograms([]);  // TAMBAHAN
+    setMyPrograms([]);
   }
 
   setTimeout(function () {
@@ -1253,7 +1250,17 @@ function setMyPrograms(data) {
   if (data && data.length) data.forEach((d) => addMyProgramToForm(d));
 }
 
-document.getElementById("addMyProgramBtn").addEventListener("click", () => addMyProgramToForm());
+// ===== INI YANG DIPERBAIKI: Event listener untuk tombol Program Saya =====
+// Pastikan kode ini dijalankan setelah DOM siap
+document.addEventListener("DOMContentLoaded", function() {
+  const addMyProgramBtn = document.getElementById("addMyProgramBtn");
+  if (addMyProgramBtn) {
+    addMyProgramBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      addMyProgramToForm();
+    });
+  }
+});
 
 // ============================================================
 // SAVE
@@ -1287,7 +1294,7 @@ document.getElementById("saveNote").addEventListener("click", async () => {
     latihans: getLatihans(),
     breakfixs: getBreakfixs(),
     programs: getPrograms(),
-    myPrograms: getMyPrograms(),  // TAMBAHAN
+    myPrograms: getMyPrograms(),
     created: now,
     edited: now,
     pin: false,
@@ -1466,7 +1473,7 @@ async function init() {
             code: "const [count, setCount] = useState(0)",
           },
         ],
-        myPrograms: [],  // TAMBAHAN
+        myPrograms: [],
         created: new Date().toLocaleDateString("id-ID"),
         edited: new Date().toLocaleDateString("id-ID"),
         pin: false,
@@ -1491,7 +1498,7 @@ async function init() {
             code: ".container { display: flex; gap: 16px; }",
           },
         ],
-        myPrograms: [],  // TAMBAHAN
+        myPrograms: [],
         created: new Date().toLocaleDateString("id-ID"),
         edited: new Date().toLocaleDateString("id-ID"),
         pin: true,
@@ -1520,7 +1527,7 @@ async function init() {
           },
         ],
         programs: [],
-        myPrograms: [],  // TAMBAHAN
+        myPrograms: [],
         created: new Date().toLocaleDateString("id-ID"),
         edited: new Date().toLocaleDateString("id-ID"),
         pin: false,
