@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CatatanKu — Satu Halaman Satu Catatan</title>
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="app-header row-between">
+        <div>
+            <h1>📝 CatatanKu</h1>
+            <div class="subtitle">Satu halaman · satu catatan</div>
+        </div>
+        <div class="header-actions">
+            <span id="totalNotes" class="text-muted">0 catatan</span>
+            <button class="btn" id="addNoteBtn">+ Tambah</button>
+            <button class="btn btn-outline" id="themeToggle">🌙</button>
+            <button class="btn btn-outline btn-sm" id="exportBtn">📤</button>
+            <button class="btn btn-outline btn-sm" id="importBtn">📥</button>
+            <input type="file" id="fileInput" hidden />
+        </div>
+    </header>
+
+    <!-- ===== FILTERS ===== -->
+    <div class="filters-bar">
+        <input type="text" id="searchInput" placeholder="Cari catatan..." />
+        <select id="categorySelect">
+            <option value="ALL">Semua Kategori</option>
+        </select>
+        <select id="understandingFilter">
+            <option value="ALL">Semua Status</option>
+            <option value="paham">✅ Paham</option>
+            <option value="belum">❌ Belum</option>
+        </select>
+        <select id="sortBy">
+            <option value="default">Default</option>
+            <option value="newest">Terbaru</option>
+            <option value="oldest">Terlama</option>
+            <option value="title">A-Z</option>
+        </select>
+        <button class="btn btn-outline btn-sm" id="resetFilter">↺ Reset</button>
+        <span id="syncStatus" class="text-muted">💾 Local</span>
+    </div>
+
+    <!-- ===== NOTE DISPLAY ===== -->
+    <div id="noteDisplay"></div>
+
+    <!-- ===== NAVIGATION ===== -->
+    <div class="nav-bar">
+        <button class="btn btn-outline" id="prevNoteNav" onclick="goPrevNote()">◀ Sebelumnya</button>
+        <span class="nav-counter" id="navCounter">1 / 1</span>
+        <button class="btn btn-outline" id="nextNoteNav" onclick="goNextNote()">Selanjutnya ▶</button>
+        <span class="nav-hint">⌨️ ← →</span>
+    </div>
+
+    <!-- ===== EDIT MODAL ===== -->
+    <div id="editModal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="modalTitle">📝 Tambah Catatan</h2>
+                <button class="modal-close" id="cancelEdit">✕</button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Judul & Kategori -->
+                <div class="col-2">
+                    <div class="form-group">
+                        <label>📌 Judul *</label>
+                        <input type="text" id="noteTitle" placeholder="Judul catatan..." />
+                    </div>
+                    <div class="form-group">
+                        <label>🗂️ Kategori</label>
+                        <select id="noteCategory">
+                            <option>Umum</option><option>HTML</option><option>CSS</option>
+                            <option>JavaScript</option><option>React</option><option>Python</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Pemahaman & Tipe -->
+                <div class="col-2">
+                    <div class="form-group">
+                        <label>📊 Status Pemahaman</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="understanding" value="paham" /> ✅ Paham</label>
+                            <label><input type="radio" name="understanding" value="belum" checked /> ❌ Belum</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>🏷️ Tipe</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="fundamentalType" value="fundamental" /> ⭐ Fundamental</label>
+                            <label><input type="radio" name="fundamentalType" value="nonfundamental" checked /> 📘 Non-Fundamental</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quill Editors -->
+                <div class="editor-block">
+                    <span class="editor-label">✅ Yang dipahami</span>
+                    <div class="editor-toolbar">
+                        <button class="btn btn-sm" id="toggleColorUnderstand">🔴 Warna</button>
+                        <button class="btn btn-sm" id="toggleCodeUnderstand">📄 Kode</button>
+                    </div>
+                    <div id="quillEditorUnderstand"></div>
+                </div>
+
+                <div class="editor-block">
+                    <span class="editor-label">❌ Yang belum dipahami</span>
+                    <div class="editor-toolbar">
+                        <button class="btn btn-sm" id="toggleColorNotUnderstand">🔴 Warna</button>
+                        <button class="btn btn-sm" id="toggleCodeNotUnderstand">📄 Kode</button>
+                    </div>
+                    <div id="quillEditorNotUnderstand"></div>
+                </div>
+
+                <div class="editor-block">
+                    <span class="editor-label">⚠️ Kesalahan Umum</span>
+                    <div class="editor-toolbar">
+                        <button class="btn btn-sm" id="toggleColorCommonMistakes">🔴 Warna</button>
+                        <button class="btn btn-sm" id="toggleCodeCommonMistakes">📄 Kode</button>
+                    </div>
+                    <div id="quillEditorCommonMistakes"></div>
+                </div>
+
+                <!-- Latihan -->
+                <div class="sub-form">
+                    <div class="sub-form-header">
+                        <strong>🏋️ Latihan</strong>
+                        <button class="btn btn-sm" id="addLatihanBtn">+ Tambah</button>
+                    </div>
+                    <div id="latihanList"></div>
+                </div>
+
+                <!-- Break & Fix -->
+                <div class="sub-form">
+                    <div class="sub-form-header">
+                        <strong>🐛 Break &amp; Fix</strong>
+                        <button class="btn btn-sm" id="addBreakfixBtn">+ Tambah</button>
+                    </div>
+                    <div id="breakfixList"></div>
+                </div>
+
+                <!-- Program -->
+                <div class="sub-form">
+                    <div class="sub-form-header">
+                        <strong>💻 Program</strong>
+                        <button class="btn btn-sm" id="addProgramBtn">+ Tambah</button>
+                    </div>
+                    <div id="programList"></div>
+                </div>
+
+                <!-- Syntax -->
+                <div class="form-group">
+                    <label>📝 Syntax / Potongan Kode</label>
+                    <textarea id="noteSyntaxCode" rows="3" placeholder="Tulis snippet kode di sini..."></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-outline" id="cancelEditBottom">Batal</button>
+                    <button class="btn" id="saveNote">💾 Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== DIFF MODAL ===== -->
+    <div id="diffModal" class="diff-modal hidden">
+        <div class="diff-box">
+            <div class="diff-header">
+                <span class="diff-title">🔍 Perbedaan Kode</span>
+                <button class="modal-close" id="closeDiffBtn">✕</button>
+            </div>
+            <div id="diffBody"></div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script src="app.js?v=4"></script>
+</body>
+</html>
