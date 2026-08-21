@@ -20,9 +20,10 @@ const state = {
   editorContentStore: { understand: "", notUnderstand: "", commonMistakes: "" },
   latihanQuillIdCounter: 0,
   programQuillIdCounter: 0,
+  myProgramQuillIdCounter: 0,  // TAMBAHAN: untuk Program Saya
   breakfixQuillIdCounter: 0,
   currentNoteIndex: 0,
-  isModalOpen: false, // Track modal state
+  isModalOpen: false,
 };
 
 // ============================================================
@@ -30,7 +31,6 @@ const state = {
 // ============================================================
 const API_URL = "save-data.php";
 
-// Fungsi untuk menyimpan ke server
 async function saveToServer(notes) {
   try {
     const response = await fetch(API_URL, {
@@ -57,7 +57,6 @@ async function saveToServer(notes) {
   }
 }
 
-// Fungsi untuk mengambil dari server
 async function loadFromServer() {
   try {
     const response = await fetch(API_URL, {
@@ -83,7 +82,6 @@ async function loadFromServer() {
   }
 }
 
-// Fungsi untuk reset data di server
 async function resetServerData() {
   try {
     const response = await fetch(API_URL, {
@@ -100,15 +98,10 @@ async function resetServerData() {
 // ============================================================
 // MODIFIED STORAGE FUNCTIONS
 // ============================================================
-// Gabungan: simpan ke localStorage dan server
 async function saveToStorage() {
   try {
-    // Simpan ke localStorage
     localStorage.setItem("notes_minimal", JSON.stringify(state.notes));
-
-    // Simpan ke server
     await saveToServer(state.notes);
-
     updateSyncStatus("💾 Tersimpan");
     return true;
   } catch (e) {
@@ -117,10 +110,8 @@ async function saveToStorage() {
   }
 }
 
-// Gabungan: load dari localStorage atau server
 async function loadFromStorage() {
   try {
-    // Coba dari localStorage dulu
     const localData = localStorage.getItem("notes_minimal");
     let hasLocalData = false;
     let parsedData = null;
@@ -131,34 +122,18 @@ async function loadFromStorage() {
         if (Array.isArray(parsedData) && parsedData.length) {
           hasLocalData = true;
         }
-      } catch (e) {
-        // Invalid JSON
-      }
+      } catch (e) {}
     }
 
-    // Coba dari server
     const serverData = await loadFromServer();
 
     if (serverData && Array.isArray(serverData) && serverData.length) {
-      // Server memiliki data
-      if (hasLocalData) {
-        // Jika ada data di kedua tempat, gunakan yang lebih baru
-        // Untuk sederhana, kita gunakan server data
-        state.notes = serverData.map((n, i) => ({ ...n, id: i }));
-        // Update localStorage juga
-        localStorage.setItem("notes_minimal", JSON.stringify(state.notes));
-        updateSyncStatus("💾 Load dari server");
-        return true;
-      } else {
-        state.notes = serverData.map((n, i) => ({ ...n, id: i }));
-        localStorage.setItem("notes_minimal", JSON.stringify(state.notes));
-        updateSyncStatus("💾 Load dari server");
-        return true;
-      }
+      state.notes = serverData.map((n, i) => ({ ...n, id: i }));
+      localStorage.setItem("notes_minimal", JSON.stringify(state.notes));
+      updateSyncStatus("💾 Load dari server");
+      return true;
     } else if (hasLocalData && parsedData) {
-      // Gunakan data lokal jika server kosong
       state.notes = parsedData.map((n, i) => ({ ...n, id: i }));
-      // Kirim ke server
       await saveToServer(state.notes);
       updateSyncStatus("💾 Load dari lokal & sync ke server");
       return true;
@@ -278,7 +253,6 @@ function setupAutoExpand(selector) {
     }
   });
 
-  // Also run on DOM changes (for dynamically added elements)
   const observer = new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
       if (mutation.type === "childList") {
@@ -297,7 +271,6 @@ function setupAutoExpand(selector) {
     subtree: true,
   });
 
-  // Initial setup
   document.querySelectorAll(selector).forEach(function (textarea) {
     textarea.dataset.autoExpandSetup = "true";
     autoExpandTextarea(textarea);
@@ -335,7 +308,6 @@ function updateNavButtons(currentIndex, total) {
 }
 
 function goPrevNote() {
-  // Jangan navigasi jika modal terbuka
   if (state.isModalOpen) return;
   const filtered = sortNotes(getFilteredNotes());
   if (!filtered.length) return;
@@ -347,7 +319,6 @@ function goPrevNote() {
 }
 
 function goNextNote() {
-  // Jangan navigasi jika modal terbuka
   if (state.isModalOpen) return;
   const filtered = sortNotes(getFilteredNotes());
   if (!filtered.length) return;
@@ -358,12 +329,8 @@ function goNextNote() {
   navigateToNote(newIdx);
 }
 
-// Keyboard navigation - DIPERBAIKI dengan cek modal
 document.addEventListener("keydown", (e) => {
-  // Cek apakah modal terbuka
   if (state.isModalOpen) return;
-
-  // Cek apakah sedang fokus di input/textarea/select
   const target = e.target;
   if (
     target.tagName === "INPUT" ||
@@ -402,7 +369,7 @@ function renderSingleNote(note) {
   const pin = n.pin ? "📌" : "";
   const fav = n.favorite ? "⭐" : "";
 
-  // Latihan - tampilkan seperti program dengan file content
+  // Latihan
   let latihanHtml = "";
   if (n.latihans && n.latihans.length) {
     latihanHtml = n.latihans
@@ -475,6 +442,24 @@ function renderSingleNote(note) {
       .join("");
   }
 
+  // ===== PROGRAM SAYA - TAMBAHAN BARU =====
+  let myProgramHtml = "";
+  if (n.myPrograms && n.myPrograms.length) {
+    myProgramHtml = n.myPrograms
+      .map(
+        (p, pi) => `
+                        <div class="sub-item my-program-item">
+                            <div class="sub-item-header">
+                                <span class="sub-item-title">💻 ${escapeHTML(p.title || "Program Saya")}</span>
+                            </div>
+                            ${p.description ? `<div class="text-sm">${escapeHTML(stripHtml(p.description))}</div>` : ""}
+                            ${p.code ? `<div class="code-block">${escapeHTML(p.code)}</div>` : ""}
+                        </div>
+                    `,
+      )
+      .join("");
+  }
+
   const syntaxHtml = n.syntaxCode
     ? `<div class="code-block">${escapeHTML(n.syntaxCode)}</div>`
     : "";
@@ -505,6 +490,7 @@ function renderSingleNote(note) {
                         ${latihanHtml ? `<div class="sub-section"><span class="sub-section-title">🏋️ Latihan</span>${latihanHtml}</div>` : ""}
                         ${breakfixHtml ? `<div class="sub-section"><span class="sub-section-title">🐛 Break & Fix</span>${breakfixHtml}</div>` : ""}
                         ${programHtml ? `<div class="sub-section"><span class="sub-section-title">💻 Program</span>${programHtml}</div>` : ""}
+                        ${myProgramHtml ? `<div class="sub-section"><span class="sub-section-title">💻 Program Saya</span>${myProgramHtml}</div>` : ""}
 
                         <div class="note-actions">
                             <button class="btn btn-sm btn-outline" onclick="togglePin(${n.id})">${n.pin ? "📌 Unpin" : "📍 Pin"}</button>
@@ -547,7 +533,7 @@ function render() {
 }
 
 // ============================================================
-// MODAL CONTROL - FIX SCROLL & KEYBOARD
+// MODAL CONTROL
 // ============================================================
 function openModal() {
   state.isModalOpen = true;
@@ -647,7 +633,6 @@ function openEditModal(noteData = null, editId = null) {
   document.getElementById("modalTitle").textContent =
     editId !== null ? "✏️ Edit Catatan" : "📝 Tambah Catatan";
 
-  // Buka modal dengan fungsi yang sudah di-refactor
   openModal();
 
   if (noteData) {
@@ -680,6 +665,7 @@ function openEditModal(noteData = null, editId = null) {
     setLatihans(noteData.latihans || []);
     setBreakfixs(noteData.breakfixs || []);
     setPrograms(noteData.programs || []);
+    setMyPrograms(noteData.myPrograms || []);  // TAMBAHAN
   } else {
     document.getElementById("noteTitle").value = "";
     document.getElementById("noteCategory").value = "Umum";
@@ -696,13 +682,13 @@ function openEditModal(noteData = null, editId = null) {
     setLatihans([]);
     setBreakfixs([]);
     setPrograms([]);
+    setMyPrograms([]);  // TAMBAHAN
   }
 
-  // Setup auto-expand for textareas in modal
   setTimeout(function () {
     document
       .querySelectorAll(
-        ".latihan-file-row textarea.file-content, .prog-code, .bf-broken, .bf-fixed",
+        ".latihan-file-row textarea.file-content, .prog-code, .myprog-code, .bf-broken, .bf-fixed",
       )
       .forEach(function (textarea) {
         if (!textarea.dataset.autoExpandSetup) {
@@ -730,7 +716,6 @@ document
   .getElementById("cancelEditBottom")
   .addEventListener("click", closeEditModal);
 
-// Close modal with ESC key
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && state.isModalOpen) {
     closeEditModal();
@@ -929,7 +914,6 @@ function addLatihanToForm(data = null) {
     const quill = initQuill(id, "latihan_" + id);
     if (quill && data?.description) quill.root.innerHTML = data.description;
 
-    // Setup auto-expand for textareas in this new element
     div.querySelectorAll("textarea.file-content").forEach(function (textarea) {
       textarea.dataset.autoExpandSetup = "true";
       autoExpandTextarea(textarea);
@@ -952,7 +936,6 @@ function addFileToLatihan(btn) {
                 `;
   container.appendChild(div);
 
-  // Setup auto-expand for new textarea
   const textarea = div.querySelector("textarea.file-content");
   textarea.dataset.autoExpandSetup = "true";
   autoExpandTextarea(textarea);
@@ -1044,7 +1027,6 @@ function addBreakfixToForm(data = null) {
     const q3 = initQuill(solId, "bfsol_" + solId);
     if (q3 && data?.solution) q3.root.innerHTML = data.solution;
 
-    // Setup auto-expand for textareas
     div.querySelectorAll(".bf-broken, .bf-fixed").forEach(function (textarea) {
       textarea.dataset.autoExpandSetup = "true";
       autoExpandTextarea(textarea);
@@ -1188,7 +1170,6 @@ function addProgramToForm(data = null) {
     const q = initQuill(id, "prog_" + id);
     if (q && data?.description) q.root.innerHTML = data.description;
 
-    // Setup auto-expand for textarea
     const textarea = div.querySelector(".prog-code");
     textarea.dataset.autoExpandSetup = "true";
     autoExpandTextarea(textarea);
@@ -1218,6 +1199,61 @@ function setPrograms(data) {
 document
   .getElementById("addProgramBtn")
   .addEventListener("click", () => addProgramToForm());
+
+// ============================================================
+// MY PROGRAM (modal form) - TAMBAHAN BARU
+// ============================================================
+function addMyProgramToForm(data = null) {
+  const list = document.getElementById("myProgramList");
+  const idx = list.children.length;
+  const id = "myProgDesc_" + Date.now() + "_" + state.myProgramQuillIdCounter++;
+  const div = document.createElement("div");
+  div.className = "sub-item-form my-program-item";
+  div.dataset.quillId = id;
+  div.innerHTML = `
+                    <div class="sub-item-header">
+                        <span class="sub-item-title">💻 Program Saya #${idx + 1}</span>
+                        <button class="btn btn-sm btn-danger" onclick="this.closest('.sub-item-form').remove()">✕</button>
+                    </div>
+                    <input type="text" class="myprog-title" placeholder="Judul Program" value="${escapeHTML(data?.title || "")}" style="width:100%;margin-bottom:4px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.8rem;" />
+                    <div style="margin-bottom:4px;">
+                        <span class="text-sm">📝 Deskripsi</span>
+                        <div id="${id}"></div>
+                    </div>
+                    <textarea class="myprog-code" rows="1" placeholder="Kode program yang saya buat..." style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);">${escapeHTML(data?.code || "")}</textarea>
+                `;
+  list.appendChild(div);
+  setTimeout(() => {
+    const q = initQuill(id, "myprog_" + id);
+    if (q && data?.description) q.root.innerHTML = data.description;
+
+    const textarea = div.querySelector(".myprog-code");
+    textarea.dataset.autoExpandSetup = "true";
+    autoExpandTextarea(textarea);
+  }, 50);
+}
+
+function getMyPrograms() {
+  const items = document.querySelectorAll("#myProgramList .sub-item-form");
+  const result = [];
+  items.forEach((item) => {
+    const title = item.querySelector(".myprog-title")?.value || "";
+    const code = item.querySelector(".myprog-code")?.value || "";
+    const quillId = item.dataset.quillId;
+    let description = "";
+    if (quillId && window[quillId]) description = window[quillId].getText();
+    if (code || title) result.push({ title, description: description.trim(), code });
+  });
+  return result;
+}
+
+function setMyPrograms(data) {
+  const list = document.getElementById("myProgramList");
+  list.innerHTML = "";
+  if (data && data.length) data.forEach((d) => addMyProgramToForm(d));
+}
+
+document.getElementById("addMyProgramBtn").addEventListener("click", () => addMyProgramToForm());
 
 // ============================================================
 // SAVE
@@ -1251,6 +1287,7 @@ document.getElementById("saveNote").addEventListener("click", async () => {
     latihans: getLatihans(),
     breakfixs: getBreakfixs(),
     programs: getPrograms(),
+    myPrograms: getMyPrograms(),  // TAMBAHAN
     created: now,
     edited: now,
     pin: false,
@@ -1362,7 +1399,7 @@ document.getElementById("themeToggle").addEventListener("click", () => {
 });
 
 // ============================================================
-// INIT (Modified with async)
+// INIT
 // ============================================================
 async function init() {
   const savedTheme = localStorage.getItem("catatan_theme");
@@ -1371,12 +1408,10 @@ async function init() {
     document.getElementById("themeToggle").textContent = "☀️";
   }
 
-  // Setup auto-expand for all textareas
   setupAutoExpand(
-    ".latihan-file-row textarea.file-content, .prog-code, .bf-broken, .bf-fixed",
+    ".latihan-file-row textarea.file-content, .prog-code, .myprog-code, .bf-broken, .bf-fixed",
   );
 
-  // Quill
   window.quillUnderstand = initQuill("quillEditorUnderstand", "understand");
   window.quillNotUnderstand = initQuill(
     "quillEditorNotUnderstand",
@@ -1389,11 +1424,9 @@ async function init() {
 
   initToggles();
 
-  // Load data dari storage (local + server)
   const loaded = await loadFromStorage();
 
   if (!loaded || !state.notes.length) {
-    // Data default jika kosong
     state.notes = [
       {
         id: 0,
@@ -1433,6 +1466,7 @@ async function init() {
             code: "const [count, setCount] = useState(0)",
           },
         ],
+        myPrograms: [],  // TAMBAHAN
         created: new Date().toLocaleDateString("id-ID"),
         edited: new Date().toLocaleDateString("id-ID"),
         pin: false,
@@ -1457,6 +1491,7 @@ async function init() {
             code: ".container { display: flex; gap: 16px; }",
           },
         ],
+        myPrograms: [],  // TAMBAHAN
         created: new Date().toLocaleDateString("id-ID"),
         edited: new Date().toLocaleDateString("id-ID"),
         pin: true,
@@ -1485,6 +1520,7 @@ async function init() {
           },
         ],
         programs: [],
+        myPrograms: [],  // TAMBAHAN
         created: new Date().toLocaleDateString("id-ID"),
         edited: new Date().toLocaleDateString("id-ID"),
         pin: false,
@@ -1500,7 +1536,6 @@ async function init() {
   console.log("⌨️ Gunakan tombol ◀ ▶ atau panah kiri/kanan untuk navigasi");
 }
 
-// Update DOMContentLoaded untuk async init
 document.addEventListener("DOMContentLoaded", () => {
   init();
 });

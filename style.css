@@ -793,6 +793,15 @@ h1 {
   font-size: 0.7rem;
 }
 
+/* ===== PROGRAM SAYA - TAMBAHAN BARU ===== */
+.my-program-item {
+  border-left: 3px solid #6c5ce7;
+}
+
+body.dark .my-program-item {
+  border-left-color: #a29bfe;
+}
+
 /* Latihan file rows - auto-expanding textarea */
 .latihan-file-row {
   display: flex;
@@ -846,6 +855,21 @@ h1 {
 
 /* Program textarea auto-expanding */
 .prog-code {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+  resize: vertical;
+  min-height: 80px;
+  overflow: hidden;
+}
+
+/* My Program textarea auto-expanding */
+.myprog-code {
   width: 100%;
   padding: 4px 8px;
   border: 1px solid var(--border);
@@ -1098,6 +1122,7 @@ body.dark .sub-item-form .form-row textarea,
 body.dark .latihan-file-row input,
 body.dark .latihan-file-row textarea,
 body.dark .prog-code,
+body.dark .myprog-code,
 body.dark .bf-broken,
 body.dark .bf-fixed {
   background: var(--surface);
