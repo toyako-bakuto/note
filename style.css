@@ -34,6 +34,7 @@ body {
   max-width: 1100px;
   margin: 0 auto;
   padding: 32px 24px 80px;
+  font-variant-ligatures: none;
 }
 
 /* =========================================================
