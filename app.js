@@ -20,7 +20,6 @@ const state = {
   editorContentStore: { understand: "", notUnderstand: "", commonMistakes: "" },
   latihanQuillIdCounter: 0,
   programQuillIdCounter: 0,
-  myProgramQuillIdCounter: 0,
   breakfixQuillIdCounter: 0,
   currentNoteIndex: 0,
   isModalOpen: false,
@@ -278,7 +277,7 @@ function setupAutoExpand(selector) {
 }
 
 // ============================================================
-// NAVIGATION
+// NAVIGATION - DENGAN NOMOR HALAMAN
 // ============================================================
 function navigateToNote(index) {
   const filtered = sortNotes(getFilteredNotes());
@@ -298,12 +297,22 @@ function navigateToNote(index) {
 function updateNavButtons(currentIndex, total) {
   const prevBtn = document.getElementById("prevNoteNav");
   const nextBtn = document.getElementById("nextNoteNav");
-  const counter = document.getElementById("navCounter");
+  const pageInput = document.getElementById("pageInput");
+  const pageTotal = document.getElementById("pageTotal");
+  
   if (prevBtn) prevBtn.disabled = total === 0 || currentIndex <= 0;
   if (nextBtn) nextBtn.disabled = total === 0 || currentIndex >= total - 1;
-  if (counter)
-    counter.textContent =
-      total > 0 ? `${currentIndex + 1} / ${total}` : "0 / 0";
+  
+  if (pageInput) {
+    pageInput.value = total > 0 ? currentIndex + 1 : 0;
+    pageInput.max = total > 0 ? total : 1;
+    pageInput.min = 1;
+  }
+  
+  if (pageTotal) {
+    pageTotal.textContent = `/ ${total}`;
+  }
+  
   document.getElementById("totalNotes").textContent = `${total} catatan`;
 }
 
@@ -329,6 +338,33 @@ function goNextNote() {
   navigateToNote(newIdx);
 }
 
+function goToPageNumber() {
+    const pageInput = document.getElementById('pageInput');
+    if (!pageInput) return;
+    
+    const filtered = sortNotes(getFilteredNotes());
+    const total = filtered.length;
+    
+    if (total === 0) {
+        pageInput.value = 0;
+        return;
+    }
+    
+    let pageNumber = parseInt(pageInput.value);
+    
+    if (isNaN(pageNumber) || pageNumber < 1) {
+        pageNumber = 1;
+    }
+    if (pageNumber > total) {
+        pageNumber = total;
+    }
+    
+    pageInput.value = pageNumber;
+    const index = pageNumber - 1;
+    navigateToNote(index);
+}
+
+// Keyboard navigation
 document.addEventListener("keydown", (e) => {
   if (state.isModalOpen) return;
   const target = e.target;
@@ -336,8 +372,10 @@ document.addEventListener("keydown", (e) => {
     target.tagName === "INPUT" ||
     target.tagName === "TEXTAREA" ||
     target.tagName === "SELECT"
-  )
+  ) {
+    if (target.id === "pageInput") return;
     return;
+  }
 
   if (e.key === "ArrowLeft") {
     e.preventDefault();
@@ -347,6 +385,29 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault();
     goNextNote();
   }
+});
+
+// ============================================================
+// EVENT LISTENER UNTUK INPUT NOMOR HALAMAN
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    const pageInput = document.getElementById('pageInput');
+    if (pageInput) {
+        pageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                goToPageNumber();
+            }
+        });
+        
+        pageInput.addEventListener('blur', function() {
+            goToPageNumber();
+        });
+        
+        pageInput.addEventListener('change', function() {
+            goToPageNumber();
+        });
+    }
 });
 
 // ============================================================
@@ -369,6 +430,24 @@ function renderSingleNote(note) {
   const pin = n.pin ? "📌" : "";
   const fav = n.favorite ? "⭐" : "";
 
+  // ===== FUNGSI UNTUK RENDER HASIL =====
+  function renderResult(resultData) {
+    if (!resultData) return "";
+    let html = "";
+    if (resultData.imageData && resultData.imageData.length > 0) {
+      html = `<div style="margin:6px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--bg);">
+        <img src="${resultData.imageData}" style="max-width:100%;display:block;object-fit:contain;" />
+      </div>`;
+    } else if (resultData.textResult && resultData.textResult.length > 0) {
+      html = `<div class="code-block" style="margin:6px 0;background:#181818;color:#f0f0ee;padding:10px 14px;border-radius:8px;font-family:monospace;font-size:0.75rem;white-space:pre-wrap;word-break:break-all;">${escapeHTML(resultData.textResult)}</div>`;
+    }
+    if (resultData.description && resultData.description.length > 0) {
+      html = `<div class="text-sm" style="margin-bottom:4px;color:var(--muted);">${escapeHTML(stripHtml(resultData.description))}</div>` + html;
+    }
+    return html ? `<div style="margin-top:6px;border-top:1px solid var(--border);padding-top:6px;"><span class="text-sm" style="font-weight:600;color:var(--muted);">📊 Hasil:</span>${html}</div>` : "";
+  }
+
+  // ===== LATIHAN =====
   let latihanHtml = "";
   if (n.latihans && n.latihans.length) {
     latihanHtml = n.latihans
@@ -376,84 +455,78 @@ function renderSingleNote(note) {
         const filesHtml = (l.files || [])
           .map(
             (f) => `
-                            <div class="file-item-wrapper">
-                                <div class="file-header">
-                                    ${getFileIcon(f.name)} ${escapeHTML(f.name)}
-                                </div>
-                                <div class="file-content-display">${escapeHTML(f.content)}</div>
-                            </div>
-                        `,
+              <div class="file-item-wrapper">
+                <div class="file-header">
+                  ${getFileIcon(f.name)} ${escapeHTML(f.name)}
+                </div>
+                <div class="file-content-display">${escapeHTML(f.content)}</div>
+              </div>
+            `,
           )
           .join("");
+        
+        const resultHtml = renderResult(l.result);
+        
         return `
-                            <div class="sub-item">
-                                <div class="sub-item-header">
-                                    <span class="sub-item-title">🏋️ ${escapeHTML(l.title || "Latihan")}</span>
-                                    <span class="sub-item-meta">${(l.files || []).length} file</span>
-                                </div>
-                                ${l.description ? `<div class="text-sm">${escapeHTML(stripHtml(l.description))}</div>` : ""}
-                                <div class="file-list">${filesHtml}</div>
-                            </div>
-                        `;
+          <div class="sub-item">
+            <div class="sub-item-header">
+              <span class="sub-item-title">🏋️ ${escapeHTML(l.title || "Latihan")}</span>
+              <span class="sub-item-meta">${(l.files || []).length} file</span>
+            </div>
+            ${l.description ? `<div class="text-sm">${escapeHTML(stripHtml(l.description))}</div>` : ""}
+            <div class="file-list">${filesHtml}</div>
+            ${resultHtml}
+          </div>
+        `;
       })
       .join("");
   }
 
+  // ===== BREAK & FIX =====
   let breakfixHtml = "";
   if (n.breakfixs && n.breakfixs.length) {
     breakfixHtml = n.breakfixs
-      .map(
-        (b, bi) => `
-                        <div class="sub-item">
-                            <div class="sub-item-header">
-                                <span class="sub-item-title">🐛 ${escapeHTML(b.title || "Break & Fix")}</span>
-                                <span class="sub-item-meta">${b.solved ? "✅ Solved" : "⏳ In Progress"}</span>
-                            </div>
-                            ${b.description ? `<div class="text-sm">${escapeHTML(stripHtml(b.description))}</div>` : ""}
-                            <div class="breakfix-row">
-                                ${b.brokenCode ? `<div><span class="text-sm">🔴 Broken</span><div class="code-block broken">${escapeHTML(b.brokenCode)}</div></div>` : ""}
-                                ${b.fixedCode ? `<div><span class="text-sm">🟢 Fixed</span><div class="code-block fixed">${escapeHTML(b.fixedCode)}</div></div>` : ""}
-                            </div>
-                            ${b.hint ? `<div class="text-sm">💡 ${escapeHTML(stripHtml(b.hint))}</div>` : ""}
-                            <button class="btn btn-sm btn-outline" onclick="showDiff(${n.id},${bi})">🔍 Diff</button>
-                        </div>
-                    `,
-      )
+      .map((b, bi) => {
+        const resultHtml = renderResult(b.result);
+        
+        return `
+          <div class="sub-item">
+            <div class="sub-item-header">
+              <span class="sub-item-title">🐛 ${escapeHTML(b.title || "Break & Fix")}</span>
+              <span class="sub-item-meta">${b.solved ? "✅ Solved" : "⏳ In Progress"}</span>
+            </div>
+            ${b.description ? `<div class="text-sm">${escapeHTML(stripHtml(b.description))}</div>` : ""}
+            <div class="breakfix-row">
+              ${b.brokenCode ? `<div><span class="text-sm">🔴 Broken</span><div class="code-block broken">${escapeHTML(b.brokenCode)}</div></div>` : ""}
+              ${b.fixedCode ? `<div><span class="text-sm">🟢 Fixed</span><div class="code-block fixed">${escapeHTML(b.fixedCode)}</div></div>` : ""}
+            </div>
+            ${b.hint ? `<div class="text-sm">💡 ${escapeHTML(stripHtml(b.hint))}</div>` : ""}
+            ${resultHtml}
+            <button class="btn btn-sm btn-outline" onclick="showDiff(${n.id},${bi})">🔍 Diff</button>
+          </div>
+        `;
+      })
       .join("");
   }
 
+  // ===== PROGRAM =====
   let programHtml = "";
   if (n.programs && n.programs.length) {
     programHtml = n.programs
-      .map(
-        (p, pi) => `
-                        <div class="sub-item">
-                            <div class="sub-item-header">
-                                <span class="sub-item-title">💻 ${escapeHTML(p.title || "Program")}</span>
-                            </div>
-                            ${p.description ? `<div class="text-sm">${escapeHTML(stripHtml(p.description))}</div>` : ""}
-                            ${p.code ? `<div class="code-block">${escapeHTML(p.code)}</div>` : ""}
-                        </div>
-                    `,
-      )
-      .join("");
-  }
-
-  // ===== PROGRAM SAYA =====
-  let myProgramHtml = "";
-  if (n.myPrograms && n.myPrograms.length) {
-    myProgramHtml = n.myPrograms
-      .map(
-        (p, pi) => `
-                        <div class="sub-item my-program-item">
-                            <div class="sub-item-header">
-                                <span class="sub-item-title">💻 ${escapeHTML(p.title || "Program Saya")}</span>
-                            </div>
-                            ${p.description ? `<div class="text-sm">${escapeHTML(stripHtml(p.description))}</div>` : ""}
-                            ${p.code ? `<div class="code-block">${escapeHTML(p.code)}</div>` : ""}
-                        </div>
-                    `,
-      )
+      .map((p, pi) => {
+        const resultHtml = renderResult(p.result);
+        
+        return `
+          <div class="sub-item">
+            <div class="sub-item-header">
+              <span class="sub-item-title">💻 ${escapeHTML(p.title || "Program")}</span>
+            </div>
+            ${p.description ? `<div class="text-sm">${escapeHTML(stripHtml(p.description))}</div>` : ""}
+            ${p.code ? `<div class="code-block">${escapeHTML(p.code)}</div>` : ""}
+            ${resultHtml}
+          </div>
+        `;
+      })
       .join("");
   }
 
@@ -462,41 +535,40 @@ function renderSingleNote(note) {
     : "";
 
   const html = `
-                    <div class="note-card" id="note-${n.id}">
-                        <div class="note-header">
-                            <div>
-                                <div class="note-title">${pin} ${fav} ${escapeHTML(n.title || "Tanpa Judul")}</div>
-                                <div class="note-tags">
-                                    <span class="tag">${escapeHTML(cat)}</span>
-                                    <span class="tag ${n.understanding === "paham" ? "tag-paham" : "tag-belum"}">${status}</span>
-                                    <span class="tag ${n.fundamentalType === "fundamental" ? "tag-fundamental" : "tag-nonfundamental"}">${type}</span>
-                                </div>
-                            </div>
-                            <div class="note-meta">
-                                ${n.created || "-"} ${n.edited && n.edited !== n.created ? "✏️ diedit" : ""}
-                            </div>
-                        </div>
+    <div class="note-card" id="note-${n.id}">
+      <div class="note-header">
+        <div>
+          <div class="note-title">${pin} ${fav} ${escapeHTML(n.title || "Tanpa Judul")}</div>
+          <div class="note-tags">
+            <span class="tag">${escapeHTML(cat)}</span>
+            <span class="tag ${n.understanding === "paham" ? "tag-paham" : "tag-belum"}">${status}</span>
+            <span class="tag ${n.fundamentalType === "fundamental" ? "tag-fundamental" : "tag-nonfundamental"}">${type}</span>
+          </div>
+        </div>
+        <div class="note-meta">
+          ${n.created || "-"} ${n.edited && n.edited !== n.created ? "✏️ diedit" : ""}
+        </div>
+      </div>
 
-                        <div class="note-body">
-                            ${n.understand ? `<div class="block full"><span class="block-label">✅ Dipahami</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.understand}</div></div></div>` : ""}
-                            ${n.notUnderstand ? `<div class="block full"><span class="block-label">❌ Belum dipahami</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.notUnderstand}</div></div></div>` : ""}
-                            ${n.commonMistakes ? `<div class="block full"><span class="block-label">⚠️ Kesalahan Umum</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.commonMistakes}</div></div></div>` : ""}
-                            ${syntaxHtml ? `<div class="block full"><span class="block-label">📝 Syntax</span>${syntaxHtml}</div>` : ""}
-                        </div>
+      <div class="note-body">
+        ${n.understand ? `<div class="block full"><span class="block-label">✅ Dipahami</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.understand}</div></div></div>` : ""}
+        ${n.notUnderstand ? `<div class="block full"><span class="block-label">❌ Belum dipahami</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.notUnderstand}</div></div></div>` : ""}
+        ${n.commonMistakes ? `<div class="block full"><span class="block-label">⚠️ Kesalahan Umum</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.commonMistakes}</div></div></div>` : ""}
+        ${syntaxHtml ? `<div class="block full"><span class="block-label">📝 Syntax</span>${syntaxHtml}</div>` : ""}
+      </div>
 
-                        ${latihanHtml ? `<div class="sub-section"><span class="sub-section-title">🏋️ Latihan</span>${latihanHtml}</div>` : ""}
-                        ${breakfixHtml ? `<div class="sub-section"><span class="sub-section-title">🐛 Break & Fix</span>${breakfixHtml}</div>` : ""}
-                        ${programHtml ? `<div class="sub-section"><span class="sub-section-title">💻 Program</span>${programHtml}</div>` : ""}
-                        ${myProgramHtml ? `<div class="sub-section"><span class="sub-section-title">💻 Program Saya</span>${myProgramHtml}</div>` : ""}
+      ${latihanHtml ? `<div class="sub-section"><span class="sub-section-title">🏋️ Latihan</span>${latihanHtml}</div>` : ""}
+      ${breakfixHtml ? `<div class="sub-section"><span class="sub-section-title">🐛 Break & Fix</span>${breakfixHtml}</div>` : ""}
+      ${programHtml ? `<div class="sub-section"><span class="sub-section-title">💻 Program</span>${programHtml}</div>` : ""}
 
-                        <div class="note-actions">
-                            <button class="btn btn-sm btn-outline" onclick="togglePin(${n.id})">${n.pin ? "📌 Unpin" : "📍 Pin"}</button>
-                            <button class="btn btn-sm btn-outline" onclick="toggleFavorite(${n.id})">${n.favorite ? "⭐ Unfavorite" : "☆ Favorite"}</button>
-                            <button class="btn btn-sm" onclick="editNote(${n.id})">✏️ Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteNote(${n.id})">🗑️</button>
-                        </div>
-                    </div>
-                `;
+      <div class="note-actions">
+        <button class="btn btn-sm btn-outline" onclick="togglePin(${n.id})">${n.pin ? "📌 Unpin" : "📍 Pin"}</button>
+        <button class="btn btn-sm btn-outline" onclick="toggleFavorite(${n.id})">${n.favorite ? "⭐ Unfavorite" : "☆ Favorite"}</button>
+        <button class="btn btn-sm" onclick="editNote(${n.id})">✏️ Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteNote(${n.id})">🗑️</button>
+      </div>
+    </div>
+  `;
   container.innerHTML = html;
 }
 
@@ -662,7 +734,6 @@ function openEditModal(noteData = null, editId = null) {
     setLatihans(noteData.latihans || []);
     setBreakfixs(noteData.breakfixs || []);
     setPrograms(noteData.programs || []);
-    setMyPrograms(noteData.myPrograms || []);
   } else {
     document.getElementById("noteTitle").value = "";
     document.getElementById("noteCategory").value = "Umum";
@@ -679,13 +750,12 @@ function openEditModal(noteData = null, editId = null) {
     setLatihans([]);
     setBreakfixs([]);
     setPrograms([]);
-    setMyPrograms([]);
   }
 
   setTimeout(function () {
     document
       .querySelectorAll(
-        ".latihan-file-row textarea.file-content, .prog-code, .myprog-code, .bf-broken, .bf-fixed",
+        ".latihan-file-row textarea.file-content, .prog-code, .bf-broken, .bf-fixed",
       )
       .forEach(function (textarea) {
         if (!textarea.dataset.autoExpandSetup) {
@@ -866,56 +936,247 @@ function initToggles() {
 }
 
 // ============================================================
+// HASIL PROGRAM - REUSABLE FUNCTIONS
+// ============================================================
+
+function getResultFromSection(section) {
+  if (!section) return null;
+  const imageData = section.querySelector('.result-image-data')?.value || '';
+  const textResult = section.querySelector('.result-text-content')?.value || '';
+  const quillId = section.querySelector('[id^="resultDesc_"]')?.id || '';
+  let description = '';
+  if (quillId && window[quillId]) {
+    description = window[quillId].getText();
+  }
+  
+  const imageSection = section.querySelector('.result-image-section');
+  const isImageVisible = imageSection && imageSection.style.display !== 'none';
+  
+  let type = "none";
+  if (isImageVisible && imageData) type = "image";
+  else if (textResult) type = "text";
+  
+  if (imageData || textResult) {
+    return {
+      description: description.trim(),
+      imageData: imageData,
+      textResult: textResult,
+      type: type
+    };
+  }
+  return null;
+}
+
+function toggleResultTypeInSection(btn, type) {
+  const section = btn.closest('.latihan-result-section, .breakfix-result-section, .program-result-section');
+  if (!section) return;
+  
+  const imageSection = section.querySelector('.result-image-section');
+  const textSection = section.querySelector('.result-text-section');
+  
+  const buttons = section.querySelectorAll('.btn-outline');
+  buttons.forEach(b => {
+    if (b.textContent.includes('Gambar') || b.textContent.includes('Text')) {
+      b.className = 'btn btn-sm btn-outline';
+    }
+  });
+  btn.className = 'btn btn-sm btn';
+  
+  if (type === 'image') {
+    if (imageSection) imageSection.style.display = 'block';
+    if (textSection) textSection.style.display = 'none';
+  } else {
+    if (imageSection) imageSection.style.display = 'none';
+    if (textSection) textSection.style.display = 'block';
+  }
+}
+
+function uploadResultImageInSection(btn) {
+  const section = btn.closest('.latihan-result-section, .breakfix-result-section, .program-result-section');
+  const input = section.querySelector('.result-image-input');
+  if (input) input.click();
+}
+
+function handleResultImageUploadInSection(input) {
+  const file = input.files[0];
+  if (!file) return;
+  
+  if (file.size > 2 * 1024 * 1024) {
+    showToast("⚠️ Ukuran gambar maksimal 2MB", true);
+    input.value = '';
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const section = input.closest('.latihan-result-section, .breakfix-result-section, .program-result-section');
+    if (!section) return;
+    
+    const preview = section.querySelector('.result-image-preview');
+    const hidden = section.querySelector('.result-image-data');
+    const removeBtn = section.querySelector('.btn-danger');
+    
+    if (preview) {
+      preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border);" />`;
+    }
+    if (hidden) {
+      hidden.value = e.target.result;
+    }
+    if (removeBtn) {
+      removeBtn.style.display = 'inline-flex';
+    }
+    
+    const imageSection = section.querySelector('.result-image-section');
+    const textSection = section.querySelector('.result-text-section');
+    if (imageSection) imageSection.style.display = 'block';
+    if (textSection) textSection.style.display = 'none';
+    
+    const buttons = section.querySelectorAll('.btn-outline');
+    buttons.forEach(b => {
+      if (b.textContent.includes('Gambar')) {
+        b.className = 'btn btn-sm btn';
+      } else if (b.textContent.includes('Text')) {
+        b.className = 'btn btn-sm btn-outline';
+      }
+    });
+    
+    showToast("🖼️ Gambar berhasil diupload");
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removeResultImageInSection(btn) {
+  const section = btn.closest('.latihan-result-section, .breakfix-result-section, .program-result-section');
+  if (!section) return;
+  
+  const preview = section.querySelector('.result-image-preview');
+  const hidden = section.querySelector('.result-image-data');
+  
+  if (preview) preview.innerHTML = '';
+  if (hidden) hidden.value = '';
+  btn.style.display = 'none';
+  
+  const imageSection = section.querySelector('.result-image-section');
+  const textSection = section.querySelector('.result-text-section');
+  if (imageSection) imageSection.style.display = 'none';
+  if (textSection) textSection.style.display = 'block';
+  
+  const buttons = section.querySelectorAll('.btn-outline');
+  buttons.forEach(b => {
+    if (b.textContent.includes('Gambar')) {
+      b.className = 'btn btn-sm btn-outline';
+    } else if (b.textContent.includes('Text')) {
+      b.className = 'btn btn-sm btn';
+    }
+  });
+  
+  showToast("🗑️ Gambar dihapus");
+}
+
+// ============================================================
 // LATIHAN (modal form)
 // ============================================================
 function addLatihanToForm(data = null) {
   const list = document.getElementById("latihanList");
   const idx = list.children.length;
   const id = "latihanDesc_" + Date.now() + "_" + state.latihanQuillIdCounter++;
+  const resultId = "latihanResult_" + Date.now() + "_" + state.latihanQuillIdCounter++;
+  
   const div = document.createElement("div");
   div.className = "sub-item-form";
   div.dataset.quillId = id;
+  div.dataset.resultId = resultId;
+  
+  const hasResult = data?.result && (data.result.imageData || data.result.textResult);
+  
   div.innerHTML = `
-                    <div class="sub-item-header">
-                        <span class="sub-item-title">🏋️ Latihan #${idx + 1}</span>
-                        <button class="btn btn-sm btn-danger" onclick="this.closest('.sub-item-form').remove()">✕</button>
-                    </div>
-                    <input type="text" class="latihan-title" placeholder="Judul Latihan" value="${escapeHTML(data?.title || "")}" style="width:100%;margin-bottom:4px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.8rem;" />
-                    <div style="margin-bottom:4px;">
-                        <span class="text-sm">📝 Deskripsi</span>
-                        <div id="${id}"></div>
-                    </div>
-                    <div>
-                        <div class="row-between" style="margin-bottom:4px;">
-                            <span class="text-sm">📁 File</span>
-                            <button class="btn btn-sm" onclick="addFileToLatihan(this)">+ File</button>
-                        </div>
-                        <div class="latihan-files">${(data?.files || [])
-                          .map(
-                            (f, fi) => `
-                                <div class="latihan-file-row">
-                                    <div class="file-input-group">
-                                        <input type="text" class="file-name" placeholder="Nama file (contoh: App.js)" value="${escapeHTML(f.name)}" />
-                                        <textarea class="file-content" rows="1" placeholder="Kode program...">${escapeHTML(f.content)}</textarea>
-                                    </div>
-                                    <button class="btn btn-sm btn-danger" onclick="this.closest('.latihan-file-row').remove()">✕</button>
-                                </div>
-                            `,
-                          )
-                          .join("")}</div>
-                    </div>
-                `;
+    <div class="sub-item-header">
+      <span class="sub-item-title">🏋️ Latihan #${idx + 1}</span>
+      <button class="btn btn-sm btn-danger" onclick="this.closest('.sub-item-form').remove()">✕</button>
+    </div>
+    <input type="text" class="latihan-title" placeholder="Judul Latihan" value="${escapeHTML(data?.title || "")}" style="width:100%;margin-bottom:4px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.8rem;" />
+    <div style="margin-bottom:4px;">
+      <span class="text-sm">📝 Deskripsi</span>
+      <div id="${id}"></div>
+    </div>
+    <div>
+      <div class="row-between" style="margin-bottom:4px;">
+        <span class="text-sm">📁 File</span>
+        <button class="btn btn-sm" onclick="addFileToLatihan(this)">+ File</button>
+      </div>
+      <div class="latihan-files">${(data?.files || [])
+        .map(
+          (f, fi) => `
+            <div class="latihan-file-row">
+              <div class="file-input-group">
+                <input type="text" class="file-name" placeholder="Nama file (contoh: App.js)" value="${escapeHTML(f.name)}" />
+                <textarea class="file-content" rows="1" placeholder="Kode program...">${escapeHTML(f.content)}</textarea>
+              </div>
+              <button class="btn btn-sm btn-danger" onclick="this.closest('.latihan-file-row').remove()">✕</button>
+            </div>
+          `,
+        )
+        .join("")}</div>
+    </div>
+    
+    <!-- HASIL LATIHAN -->
+    <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
+      <div class="row-between" style="margin-bottom:4px;">
+        <span class="text-sm">📊 Hasil Latihan</span>
+        <button class="btn btn-sm btn-outline" onclick="toggleLatihanResult(this)">${hasResult ? '📊 Sembunyi Hasil' : '📊 Tambah Hasil'}</button>
+      </div>
+      <div class="latihan-result-section" style="${hasResult ? 'display:block;' : 'display:none;'}">
+        <div id="${resultId}"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0;">
+          <button class="btn btn-sm btn-outline" onclick="toggleResultTypeInSection(this, 'image')">🖼️ Gambar</button>
+          <button class="btn btn-sm btn-outline" onclick="toggleResultTypeInSection(this, 'text')">📝 Text</button>
+        </div>
+        <div class="result-image-section" style="${data?.result?.type === 'image' ? 'display:block;' : 'display:none;'}">
+          <div class="result-image-preview" style="margin:6px 0;">
+            ${data?.result?.imageData ? `<img src="${data.result.imageData}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border);" />` : ''}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-sm" onclick="uploadResultImageInSection(this)">📤 Upload Gambar</button>
+            <button class="btn btn-sm btn-danger" onclick="removeResultImageInSection(this)" ${data?.result?.imageData ? '' : 'style="display:none;"'}>✕ Hapus</button>
+            <input type="file" class="result-image-input" accept="image/*" style="display:none;" onchange="handleResultImageUploadInSection(this)" />
+            <input type="hidden" class="result-image-data" value="${escapeHTML(data?.result?.imageData || '')}" />
+          </div>
+        </div>
+        <div class="result-text-section" style="${data?.result?.type === 'text' ? 'display:block;' : 'display:none;'}">
+          <textarea class="result-text-content" rows="3" placeholder="Tulis hasil output di sini..." style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);resize:vertical;min-height:60px;">${escapeHTML(data?.result?.textResult || '')}</textarea>
+        </div>
+      </div>
+    </div>
+  `;
   list.appendChild(div);
 
   setTimeout(() => {
     const quill = initQuill(id, "latihan_" + id);
     if (quill && data?.description) quill.root.innerHTML = data.description;
-
+    
+    const resultQuill = initQuill(resultId, "latihanresult_" + resultId);
+    if (resultQuill && data?.result?.description) {
+      resultQuill.root.innerHTML = data.result.description;
+    }
+    
     div.querySelectorAll("textarea.file-content").forEach(function (textarea) {
       textarea.dataset.autoExpandSetup = "true";
       autoExpandTextarea(textarea);
     });
   }, 50);
+}
+
+function toggleLatihanResult(btn) {
+  const item = btn.closest('.sub-item-form');
+  const section = item.querySelector('.latihan-result-section');
+  if (section.style.display === 'none') {
+    section.style.display = 'block';
+    btn.textContent = '📊 Sembunyi Hasil';
+  } else {
+    section.style.display = 'none';
+    btn.textContent = '📊 Tambah Hasil';
+  }
 }
 
 function addFileToLatihan(btn) {
@@ -925,12 +1186,12 @@ function addFileToLatihan(btn) {
   const div = document.createElement("div");
   div.className = "latihan-file-row";
   div.innerHTML = `
-                    <div class="file-input-group">
-                        <input type="text" class="file-name" placeholder="Nama file (contoh: App.js)" />
-                        <textarea class="file-content" rows="1" placeholder="Kode program..."></textarea>
-                    </div>
-                    <button class="btn btn-sm btn-danger" onclick="this.closest('.latihan-file-row').remove()">✕</button>
-                `;
+    <div class="file-input-group">
+      <input type="text" class="file-name" placeholder="Nama file (contoh: App.js)" />
+      <textarea class="file-content" rows="1" placeholder="Kode program..."></textarea>
+    </div>
+    <button class="btn btn-sm btn-danger" onclick="this.closest('.latihan-file-row').remove()">✕</button>
+  `;
   container.appendChild(div);
 
   const textarea = div.querySelector("textarea.file-content");
@@ -953,8 +1214,44 @@ function getLatihans() {
       if (name && content)
         files.push({ name: name.trim(), content: content.trim() });
     });
-    if (files.length)
-      result.push({ title, description: description.trim(), files });
+    
+    const resultSection = item.querySelector('.latihan-result-section');
+    let resultData = null;
+    if (resultSection) {
+      const imageData = resultSection.querySelector('.result-image-data')?.value || '';
+      const textResult = resultSection.querySelector('.result-text-content')?.value || '';
+      const descQuillId = resultSection.querySelector('[id^="latihanResult_"]')?.id || '';
+      let descriptionResult = '';
+      if (descQuillId && window[descQuillId]) {
+        descriptionResult = window[descQuillId].getText();
+      }
+      
+      const imageSection = resultSection.querySelector('.result-image-section');
+      const isImageVisible = imageSection && imageSection.style.display !== 'none';
+      
+      let type = "none";
+      if (isImageVisible && imageData) type = "image";
+      else if (textResult) type = "text";
+      
+      if (imageData || textResult) {
+        resultData = {
+          description: descriptionResult.trim(),
+          imageData: imageData || "",
+          textResult: textResult || "",
+          type: type
+        };
+      }
+    }
+    
+    if (files.length || resultData || title) {
+      const obj = { 
+        title: title || "Latihan", 
+        description: description.trim(), 
+        files: files
+      };
+      if (resultData) obj.result = resultData;
+      result.push(obj);
+    }
   });
   return result;
 }
@@ -978,42 +1275,77 @@ function addBreakfixToForm(data = null) {
   const descId = "bfDesc_" + Date.now() + "_" + state.breakfixQuillIdCounter++;
   const hintId = "bfHint_" + Date.now() + "_" + state.breakfixQuillIdCounter++;
   const solId = "bfSol_" + Date.now() + "_" + state.breakfixQuillIdCounter++;
+  const resultId = "bfResult_" + Date.now() + "_" + state.breakfixQuillIdCounter++;
+  
   const div = document.createElement("div");
   div.className = "sub-item-form";
   div.dataset.descId = descId;
   div.dataset.hintId = hintId;
   div.dataset.solId = solId;
+  div.dataset.resultId = resultId;
+  
+  const hasResult = data?.result && (data.result.imageData || data.result.textResult);
+  
   div.innerHTML = `
-                    <div class="sub-item-header">
-                        <span class="sub-item-title">🐛 Break & Fix #${idx + 1}</span>
-                        <div style="display:flex;gap:4px;align-items:center;">
-                            <label style="font-size:.7rem;display:flex;align-items:center;gap:3px;"><input type="checkbox" class="bf-solved" ${data?.solved ? "checked" : ""} /> ✅ Solved</label>
-                            <button class="btn btn-sm btn-danger" onclick="this.closest('.sub-item-form').remove()">✕</button>
-                        </div>
-                    </div>
-                    <input type="text" class="bf-title" placeholder="Judul" value="${escapeHTML(data?.title || "")}" style="width:100%;margin-bottom:4px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.8rem;" />
-                    <div style="margin-bottom:4px;">
-                        <span class="text-sm">📝 Deskripsi</span>
-                        <div id="${descId}"></div>
-                    </div>
-                    <div class="breakfix-row">
-                        <div><span class="text-sm">🔴 Broken</span><textarea class="bf-broken" rows="1" style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);">${escapeHTML(data?.brokenCode || "")}</textarea></div>
-                        <div><span class="text-sm">🟢 Fixed</span><textarea class="bf-fixed" rows="1" style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);">${escapeHTML(data?.fixedCode || "")}</textarea></div>
-                    </div>
-                    <div style="margin-top:4px;">
-                        <button class="btn btn-sm btn-outline" onclick="toggleBF(this)">💡 Hint</button>
-                        <div class="bf-hint" style="display:none;margin-top:4px;">
-                            <span class="text-sm">💡 Hint</span>
-                            <div id="${hintId}"></div>
-                        </div>
-                        <button class="btn btn-sm btn-outline" onclick="toggleBF(this)">✅ Solusi</button>
-                        <div class="bf-solution" style="display:none;margin-top:4px;">
-                            <span class="text-sm">✅ Solusi</span>
-                            <div id="${solId}"></div>
-                        </div>
-                    </div>
-                    <button class="btn btn-sm btn-outline" onclick="previewBF(this)">🔍 Diff</button>
-                `;
+    <div class="sub-item-header">
+      <span class="sub-item-title">🐛 Break & Fix #${idx + 1}</span>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <label style="font-size:.7rem;display:flex;align-items:center;gap:3px;"><input type="checkbox" class="bf-solved" ${data?.solved ? "checked" : ""} /> ✅ Solved</label>
+        <button class="btn btn-sm btn-danger" onclick="this.closest('.sub-item-form').remove()">✕</button>
+      </div>
+    </div>
+    <input type="text" class="bf-title" placeholder="Judul" value="${escapeHTML(data?.title || "")}" style="width:100%;margin-bottom:4px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.8rem;" />
+    <div style="margin-bottom:4px;">
+      <span class="text-sm">📝 Deskripsi</span>
+      <div id="${descId}"></div>
+    </div>
+    <div class="breakfix-row">
+      <div><span class="text-sm">🔴 Broken</span><textarea class="bf-broken" rows="1" style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);">${escapeHTML(data?.brokenCode || "")}</textarea></div>
+      <div><span class="text-sm">🟢 Fixed</span><textarea class="bf-fixed" rows="1" style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);">${escapeHTML(data?.fixedCode || "")}</textarea></div>
+    </div>
+    <div style="margin-top:4px;">
+      <button class="btn btn-sm btn-outline" onclick="toggleBF(this)">💡 Hint</button>
+      <div class="bf-hint" style="display:none;margin-top:4px;">
+        <span class="text-sm">💡 Hint</span>
+        <div id="${hintId}"></div>
+      </div>
+      <button class="btn btn-sm btn-outline" onclick="toggleBF(this)">✅ Solusi</button>
+      <div class="bf-solution" style="display:none;margin-top:4px;">
+        <span class="text-sm">✅ Solusi</span>
+        <div id="${solId}"></div>
+      </div>
+    </div>
+    <button class="btn btn-sm btn-outline" onclick="previewBF(this)">🔍 Diff</button>
+    
+    <!-- HASIL BREAKFIX -->
+    <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
+      <div class="row-between" style="margin-bottom:4px;">
+        <span class="text-sm">📊 Hasil Perbaikan</span>
+        <button class="btn btn-sm btn-outline" onclick="toggleBreakfixResult(this)">${hasResult ? '📊 Sembunyi Hasil' : '📊 Tambah Hasil'}</button>
+      </div>
+      <div class="breakfix-result-section" style="${hasResult ? 'display:block;' : 'display:none;'}">
+        <div id="${resultId}"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0;">
+          <button class="btn btn-sm btn-outline" onclick="toggleResultTypeInSection(this, 'image')">🖼️ Gambar</button>
+          <button class="btn btn-sm btn-outline" onclick="toggleResultTypeInSection(this, 'text')">📝 Text</button>
+        </div>
+        <div class="result-image-section" style="${data?.result?.type === 'image' ? 'display:block;' : 'display:none;'}">
+          <div class="result-image-preview" style="margin:6px 0;">
+            ${data?.result?.imageData ? `<img src="${data.result.imageData}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border);" />` : ''}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-sm" onclick="uploadResultImageInSection(this)">📤 Upload Gambar</button>
+            <button class="btn btn-sm btn-danger" onclick="removeResultImageInSection(this)" ${data?.result?.imageData ? '' : 'style="display:none;"'}>✕ Hapus</button>
+            <input type="file" class="result-image-input" accept="image/*" style="display:none;" onchange="handleResultImageUploadInSection(this)" />
+            <input type="hidden" class="result-image-data" value="${escapeHTML(data?.result?.imageData || '')}" />
+          </div>
+        </div>
+        <div class="result-text-section" style="${data?.result?.type === 'text' ? 'display:block;' : 'display:none;'}">
+          <textarea class="result-text-content" rows="3" placeholder="Tulis hasil perbaikan di sini..." style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);resize:vertical;min-height:60px;">${escapeHTML(data?.result?.textResult || '')}</textarea>
+        </div>
+      </div>
+    </div>
+  `;
   list.appendChild(div);
 
   setTimeout(() => {
@@ -1023,6 +1355,11 @@ function addBreakfixToForm(data = null) {
     if (q2 && data?.hint) q2.root.innerHTML = data.hint;
     const q3 = initQuill(solId, "bfsol_" + solId);
     if (q3 && data?.solution) q3.root.innerHTML = data.solution;
+    
+    const resultQuill = initQuill(resultId, "bfresult_" + resultId);
+    if (resultQuill && data?.result?.description) {
+      resultQuill.root.innerHTML = data.result.description;
+    }
 
     div.querySelectorAll(".bf-broken, .bf-fixed").forEach(function (textarea) {
       textarea.dataset.autoExpandSetup = "true";
@@ -1047,6 +1384,18 @@ function toggleBF(btn) {
         : isHint
           ? "💡 Sembunyi"
           : "✅ Sembunyi";
+  }
+}
+
+function toggleBreakfixResult(btn) {
+  const item = btn.closest('.sub-item-form');
+  const section = item.querySelector('.breakfix-result-section');
+  if (section.style.display === 'none') {
+    section.style.display = 'block';
+    btn.textContent = '📊 Sembunyi Hasil';
+  } else {
+    section.style.display = 'none';
+    btn.textContent = '📊 Tambah Hasil';
   }
 }
 
@@ -1116,16 +1465,48 @@ function getBreakfixs() {
     if (descId && window[descId]) description = window[descId].getText();
     if (hintId && window[hintId]) hint = window[hintId].getText();
     if (solId && window[solId]) solution = window[solId].getText();
-    if (broken || fixed)
-      result.push({
-        title,
+    
+    const resultSection = item.querySelector('.breakfix-result-section');
+    let resultData = null;
+    if (resultSection) {
+      const imageData = resultSection.querySelector('.result-image-data')?.value || '';
+      const textResult = resultSection.querySelector('.result-text-content')?.value || '';
+      const descQuillId = resultSection.querySelector('[id^="bfResult_"]')?.id || '';
+      let descriptionResult = '';
+      if (descQuillId && window[descQuillId]) {
+        descriptionResult = window[descQuillId].getText();
+      }
+      
+      const imageSection = resultSection.querySelector('.result-image-section');
+      const isImageVisible = imageSection && imageSection.style.display !== 'none';
+      
+      let type = "none";
+      if (isImageVisible && imageData) type = "image";
+      else if (textResult) type = "text";
+      
+      if (imageData || textResult) {
+        resultData = {
+          description: descriptionResult.trim(),
+          imageData: imageData || "",
+          textResult: textResult || "",
+          type: type
+        };
+      }
+    }
+    
+    if (broken || fixed || resultData) {
+      const obj = {
+        title: title || "Break & Fix",
         description: description.trim(),
         brokenCode: broken,
         fixedCode: fixed,
         hint: hint.trim(),
         solution: solution.trim(),
-        solved,
-      });
+        solved: solved
+      };
+      if (resultData) obj.result = resultData;
+      result.push(obj);
+    }
   });
   return result;
 }
@@ -1147,30 +1528,83 @@ function addProgramToForm(data = null) {
   const list = document.getElementById("programList");
   const idx = list.children.length;
   const id = "progDesc_" + Date.now() + "_" + state.programQuillIdCounter++;
+  const resultId = "progResult_" + Date.now() + "_" + state.programQuillIdCounter++;
+  
   const div = document.createElement("div");
   div.className = "sub-item-form";
   div.dataset.quillId = id;
+  div.dataset.resultId = resultId;
+  
+  const hasResult = data?.result && (data.result.imageData || data.result.textResult);
+  
   div.innerHTML = `
-                    <div class="sub-item-header">
-                        <span class="sub-item-title">💻 Program #${idx + 1}</span>
-                        <button class="btn btn-sm btn-danger" onclick="this.closest('.sub-item-form').remove()">✕</button>
-                    </div>
-                    <input type="text" class="prog-title" placeholder="Judul Program" value="${escapeHTML(data?.title || "")}" style="width:100%;margin-bottom:4px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.8rem;" />
-                    <div style="margin-bottom:4px;">
-                        <span class="text-sm">📝 Deskripsi</span>
-                        <div id="${id}"></div>
-                    </div>
-                    <textarea class="prog-code" rows="1" placeholder="Kode program..." style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);">${escapeHTML(data?.code || "")}</textarea>
-                `;
+    <div class="sub-item-header">
+      <span class="sub-item-title">💻 Program #${idx + 1}</span>
+      <button class="btn btn-sm btn-danger" onclick="this.closest('.sub-item-form').remove()">✕</button>
+    </div>
+    <input type="text" class="prog-title" placeholder="Judul Program" value="${escapeHTML(data?.title || "")}" style="width:100%;margin-bottom:4px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.8rem;" />
+    <div style="margin-bottom:4px;">
+      <span class="text-sm">📝 Deskripsi</span>
+      <div id="${id}"></div>
+    </div>
+    <textarea class="prog-code" rows="1" placeholder="Kode program..." style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);">${escapeHTML(data?.code || "")}</textarea>
+    
+    <!-- HASIL PROGRAM -->
+    <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
+      <div class="row-between" style="margin-bottom:4px;">
+        <span class="text-sm">📊 Hasil Eksekusi</span>
+        <button class="btn btn-sm btn-outline" onclick="toggleProgramResult(this)">${hasResult ? '📊 Sembunyi Hasil' : '📊 Tambah Hasil'}</button>
+      </div>
+      <div class="program-result-section" style="${hasResult ? 'display:block;' : 'display:none;'}">
+        <div id="${resultId}"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0;">
+          <button class="btn btn-sm btn-outline" onclick="toggleResultTypeInSection(this, 'image')">🖼️ Gambar</button>
+          <button class="btn btn-sm btn-outline" onclick="toggleResultTypeInSection(this, 'text')">📝 Text</button>
+        </div>
+        <div class="result-image-section" style="${data?.result?.type === 'image' ? 'display:block;' : 'display:none;'}">
+          <div class="result-image-preview" style="margin:6px 0;">
+            ${data?.result?.imageData ? `<img src="${data.result.imageData}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border);" />` : ''}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-sm" onclick="uploadResultImageInSection(this)">📤 Upload Gambar</button>
+            <button class="btn btn-sm btn-danger" onclick="removeResultImageInSection(this)" ${data?.result?.imageData ? '' : 'style="display:none;"'}>✕ Hapus</button>
+            <input type="file" class="result-image-input" accept="image/*" style="display:none;" onchange="handleResultImageUploadInSection(this)" />
+            <input type="hidden" class="result-image-data" value="${escapeHTML(data?.result?.imageData || '')}" />
+          </div>
+        </div>
+        <div class="result-text-section" style="${data?.result?.type === 'text' ? 'display:block;' : 'display:none;'}">
+          <textarea class="result-text-content" rows="3" placeholder="Tulis output program di sini..." style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);resize:vertical;min-height:60px;">${escapeHTML(data?.result?.textResult || '')}</textarea>
+        </div>
+      </div>
+    </div>
+  `;
   list.appendChild(div);
+  
   setTimeout(() => {
     const q = initQuill(id, "prog_" + id);
     if (q && data?.description) q.root.innerHTML = data.description;
+    
+    const resultQuill = initQuill(resultId, "progresult_" + resultId);
+    if (resultQuill && data?.result?.description) {
+      resultQuill.root.innerHTML = data.result.description;
+    }
 
     const textarea = div.querySelector(".prog-code");
     textarea.dataset.autoExpandSetup = "true";
     autoExpandTextarea(textarea);
   }, 50);
+}
+
+function toggleProgramResult(btn) {
+  const item = btn.closest('.sub-item-form');
+  const section = item.querySelector('.program-result-section');
+  if (section.style.display === 'none') {
+    section.style.display = 'block';
+    btn.textContent = '📊 Sembunyi Hasil';
+  } else {
+    section.style.display = 'none';
+    btn.textContent = '📊 Tambah Hasil';
+  }
 }
 
 function getPrograms() {
@@ -1182,7 +1616,44 @@ function getPrograms() {
     const quillId = item.dataset.quillId;
     let description = "";
     if (quillId && window[quillId]) description = window[quillId].getText();
-    if (code) result.push({ title, description: description.trim(), code });
+    
+    const resultSection = item.querySelector('.program-result-section');
+    let resultData = null;
+    if (resultSection) {
+      const imageData = resultSection.querySelector('.result-image-data')?.value || '';
+      const textResult = resultSection.querySelector('.result-text-content')?.value || '';
+      const descQuillId = resultSection.querySelector('[id^="progResult_"]')?.id || '';
+      let descriptionResult = '';
+      if (descQuillId && window[descQuillId]) {
+        descriptionResult = window[descQuillId].getText();
+      }
+      
+      const imageSection = resultSection.querySelector('.result-image-section');
+      const isImageVisible = imageSection && imageSection.style.display !== 'none';
+      
+      let type = "none";
+      if (isImageVisible && imageData) type = "image";
+      else if (textResult) type = "text";
+      
+      if (imageData || textResult) {
+        resultData = {
+          description: descriptionResult.trim(),
+          imageData: imageData || "",
+          textResult: textResult || "",
+          type: type
+        };
+      }
+    }
+    
+    if (code || resultData || title) {
+      const obj = { 
+        title: title || "Program", 
+        description: description.trim(), 
+        code: code
+      };
+      if (resultData) obj.result = resultData;
+      result.push(obj);
+    }
   });
   return result;
 }
@@ -1196,71 +1667,6 @@ function setPrograms(data) {
 document
   .getElementById("addProgramBtn")
   .addEventListener("click", () => addProgramToForm());
-
-// ============================================================
-// MY PROGRAM (modal form) - TAMBAHAN BARU
-// ============================================================
-function addMyProgramToForm(data = null) {
-  const list = document.getElementById("myProgramList");
-  const idx = list.children.length;
-  const id = "myProgDesc_" + Date.now() + "_" + state.myProgramQuillIdCounter++;
-  const div = document.createElement("div");
-  div.className = "sub-item-form my-program-item";
-  div.dataset.quillId = id;
-  div.innerHTML = `
-                    <div class="sub-item-header">
-                        <span class="sub-item-title">💻 Program Saya #${idx + 1}</span>
-                        <button class="btn btn-sm btn-danger" onclick="this.closest('.sub-item-form').remove()">✕</button>
-                    </div>
-                    <input type="text" class="myprog-title" placeholder="Judul Program" value="${escapeHTML(data?.title || "")}" style="width:100%;margin-bottom:4px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:.8rem;" />
-                    <div style="margin-bottom:4px;">
-                        <span class="text-sm">📝 Deskripsi</span>
-                        <div id="${id}"></div>
-                    </div>
-                    <textarea class="myprog-code" rows="1" placeholder="Kode program yang saya buat..." style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:.75rem;background:var(--surface);color:var(--text);">${escapeHTML(data?.code || "")}</textarea>
-                `;
-  list.appendChild(div);
-  setTimeout(() => {
-    const q = initQuill(id, "myprog_" + id);
-    if (q && data?.description) q.root.innerHTML = data.description;
-
-    const textarea = div.querySelector(".myprog-code");
-    textarea.dataset.autoExpandSetup = "true";
-    autoExpandTextarea(textarea);
-  }, 50);
-}
-
-function getMyPrograms() {
-  const items = document.querySelectorAll("#myProgramList .sub-item-form");
-  const result = [];
-  items.forEach((item) => {
-    const title = item.querySelector(".myprog-title")?.value || "";
-    const code = item.querySelector(".myprog-code")?.value || "";
-    const quillId = item.dataset.quillId;
-    let description = "";
-    if (quillId && window[quillId]) description = window[quillId].getText();
-    if (code || title) result.push({ title, description: description.trim(), code });
-  });
-  return result;
-}
-
-function setMyPrograms(data) {
-  const list = document.getElementById("myProgramList");
-  list.innerHTML = "";
-  if (data && data.length) data.forEach((d) => addMyProgramToForm(d));
-}
-
-// ===== INI YANG DIPERBAIKI: Event listener untuk tombol Program Saya =====
-// Pastikan kode ini dijalankan setelah DOM siap
-document.addEventListener("DOMContentLoaded", function() {
-  const addMyProgramBtn = document.getElementById("addMyProgramBtn");
-  if (addMyProgramBtn) {
-    addMyProgramBtn.addEventListener("click", function(e) {
-      e.preventDefault();
-      addMyProgramToForm();
-    });
-  }
-});
 
 // ============================================================
 // SAVE
@@ -1294,7 +1700,6 @@ document.getElementById("saveNote").addEventListener("click", async () => {
     latihans: getLatihans(),
     breakfixs: getBreakfixs(),
     programs: getPrograms(),
-    myPrograms: getMyPrograms(),
     created: now,
     edited: now,
     pin: false,
@@ -1416,7 +1821,7 @@ async function init() {
   }
 
   setupAutoExpand(
-    ".latihan-file-row textarea.file-content, .prog-code, .myprog-code, .bf-broken, .bf-fixed",
+    ".latihan-file-row textarea.file-content, .prog-code, .bf-broken, .bf-fixed",
   );
 
   window.quillUnderstand = initQuill("quillEditorUnderstand", "understand");
@@ -1431,116 +1836,13 @@ async function init() {
 
   initToggles();
 
-  const loaded = await loadFromStorage();
-
-  if (!loaded || !state.notes.length) {
-    state.notes = [
-      {
-        id: 0,
-        title: "Belajar React Hooks",
-        category: "React",
-        understanding: "belum",
-        fundamentalType: "fundamental",
-        syntaxCode: "useState(initialState)",
-        understand: "<p><strong>useState</strong> untuk state management</p>",
-        notUnderstand: "<p>useEffect dependency array</p>",
-        commonMistakes: "<p>Lupa menambahkan dependency</p>",
-        latihans: [
-          {
-            title: "Todo App",
-            description: "Buat todo dengan hooks",
-            files: [
-              {
-                name: "App.js",
-                content: "function App() { return <div>Todo</div> }",
-              },
-            ],
-          },
-        ],
-        breakfixs: [
-          {
-            title: "UseEffect Loop",
-            description: "Infinite loop",
-            brokenCode: "useEffect(() => { setCount(count+1) })",
-            fixedCode: "useEffect(() => { setCount(count+1) }, [])",
-            solved: true,
-          },
-        ],
-        programs: [
-          {
-            title: "Counter",
-            description: "Counter dengan useState",
-            code: "const [count, setCount] = useState(0)",
-          },
-        ],
-        myPrograms: [],
-        created: new Date().toLocaleDateString("id-ID"),
-        edited: new Date().toLocaleDateString("id-ID"),
-        pin: false,
-        favorite: false,
-      },
-      {
-        id: 1,
-        title: "CSS Flexbox vs Grid",
-        category: "CSS",
-        understanding: "paham",
-        fundamentalType: "fundamental",
-        syntaxCode: "display: flex;\ndisplay: grid;",
-        understand: "<p>Flexbox untuk 1D layout</p><p>Grid untuk 2D layout</p>",
-        notUnderstand: "",
-        commonMistakes: "<p>Lupa memberikan width pada flex items</p>",
-        latihans: [],
-        breakfixs: [],
-        programs: [
-          {
-            title: "Flex Layout",
-            description: "Layout dengan flex",
-            code: ".container { display: flex; gap: 16px; }",
-          },
-        ],
-        myPrograms: [],
-        created: new Date().toLocaleDateString("id-ID"),
-        edited: new Date().toLocaleDateString("id-ID"),
-        pin: true,
-        favorite: true,
-      },
-      {
-        id: 2,
-        title: "JavaScript Async/Await",
-        category: "JavaScript",
-        understanding: "belum",
-        fundamentalType: "fundamental",
-        syntaxCode:
-          "async function fetchData() { const res = await fetch(url); }",
-        understand: "<p>async/await untuk handling promise</p>",
-        notUnderstand: "<p>Error handling dengan try/catch</p>",
-        commonMistakes: "<p>Lupa menggunakan await</p>",
-        latihans: [],
-        breakfixs: [
-          {
-            title: "Promise Error",
-            description: "Error handling",
-            brokenCode: "fetch(url).then(res => res.json())",
-            fixedCode:
-              "try { const res = await fetch(url) } catch(err) { console.log(err) }",
-            solved: false,
-          },
-        ],
-        programs: [],
-        myPrograms: [],
-        created: new Date().toLocaleDateString("id-ID"),
-        edited: new Date().toLocaleDateString("id-ID"),
-        pin: false,
-        favorite: false,
-      },
-    ];
-    await saveToStorage();
-  }
+  await loadFromStorage();
 
   render();
   updateSyncStatus("💾 Tersimpan");
   console.log("✅ CatatanKu — Satu Halaman Satu Catatan siap");
   console.log("⌨️ Gunakan tombol ◀ ▶ atau panah kiri/kanan untuk navigasi");
+  console.log("📝 Masukkan nomor halaman untuk pindah cepat");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
