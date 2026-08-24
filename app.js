@@ -168,6 +168,7 @@ function stripHtml(html) {
 
 function showToast(msg, isError = false) {
   const container = document.getElementById("toastContainer");
+  if (!container) return;
   const el = document.createElement("div");
   el.className = `toast ${isError ? "error" : ""}`;
   el.textContent = msg;
@@ -277,7 +278,7 @@ function setupAutoExpand(selector) {
 }
 
 // ============================================================
-// NAVIGATION - DENGAN NOMOR HALAMAN
+// NAVIGATION - WITHOUT WRAP AROUND
 // ============================================================
 function navigateToNote(index) {
   const filtered = sortNotes(getFilteredNotes());
@@ -287,8 +288,9 @@ function navigateToNote(index) {
     updateNavButtons(0, 0);
     return;
   }
-  if (index < 0) index = filtered.length - 1;
-  if (index >= filtered.length) index = 0;
+  // Batasi index agar tidak keluar dari rentang yang valid
+  if (index < 0) index = 0;
+  if (index >= filtered.length) index = filtered.length - 1;
   state.currentNoteIndex = index;
   renderSingleNote(filtered[index]);
   updateNavButtons(index, filtered.length);
@@ -300,8 +302,13 @@ function updateNavButtons(currentIndex, total) {
   const pageInput = document.getElementById("pageInput");
   const pageTotal = document.getElementById("pageTotal");
   
-  if (prevBtn) prevBtn.disabled = total === 0 || currentIndex <= 0;
-  if (nextBtn) nextBtn.disabled = total === 0 || currentIndex >= total - 1;
+  // Disable tombol jika di ujung
+  if (prevBtn) {
+    prevBtn.disabled = total === 0 || currentIndex <= 0;
+  }
+  if (nextBtn) {
+    nextBtn.disabled = total === 0 || currentIndex >= total - 1;
+  }
   
   if (pageInput) {
     pageInput.value = total > 0 ? currentIndex + 1 : 0;
@@ -320,75 +327,162 @@ function goPrevNote() {
   if (state.isModalOpen) return;
   const filtered = sortNotes(getFilteredNotes());
   if (!filtered.length) return;
-  const newIdx =
-    state.currentNoteIndex > 0
-      ? state.currentNoteIndex - 1
-      : filtered.length - 1;
-  navigateToNote(newIdx);
+  // Hanya pindah ke sebelumnya jika tidak di index 0
+  if (state.currentNoteIndex > 0) {
+    navigateToNote(state.currentNoteIndex - 1);
+  }
+  // Tidak melakukan apa-apa jika sudah di awal
 }
 
 function goNextNote() {
   if (state.isModalOpen) return;
   const filtered = sortNotes(getFilteredNotes());
   if (!filtered.length) return;
-  const newIdx =
-    state.currentNoteIndex < filtered.length - 1
-      ? state.currentNoteIndex + 1
-      : 0;
-  navigateToNote(newIdx);
+  // Hanya pindah ke berikutnya jika tidak di index terakhir
+  if (state.currentNoteIndex < filtered.length - 1) {
+    navigateToNote(state.currentNoteIndex + 1);
+  }
+  // Tidak melakukan apa-apa jika sudah di akhir
 }
 
 function goToPageNumber() {
-    const pageInput = document.getElementById('pageInput');
-    if (!pageInput) return;
-    
-    const filtered = sortNotes(getFilteredNotes());
-    const total = filtered.length;
-    
-    if (total === 0) {
-        pageInput.value = 0;
-        return;
-    }
-    
-    let pageNumber = parseInt(pageInput.value);
-    
-    if (isNaN(pageNumber) || pageNumber < 1) {
-        pageNumber = 1;
-    }
-    if (pageNumber > total) {
-        pageNumber = total;
-    }
-    
-    pageInput.value = pageNumber;
-    const index = pageNumber - 1;
-    navigateToNote(index);
+  const pageInput = document.getElementById('pageInput');
+  if (!pageInput) return;
+  
+  const filtered = sortNotes(getFilteredNotes());
+  const total = filtered.length;
+  
+  if (total === 0) {
+    pageInput.value = 0;
+    return;
+  }
+  
+  let pageNumber = parseInt(pageInput.value);
+  
+  if (isNaN(pageNumber) || pageNumber < 1) {
+    pageNumber = 1;
+  }
+  if (pageNumber > total) {
+    pageNumber = total;
+  }
+  
+  pageInput.value = pageNumber;
+  const index = pageNumber - 1;
+  navigateToNote(index);
 }
 
-// Keyboard navigation
+// ============================================================
+// KEYBOARD SHORTCUTS - FIXED
+// ============================================================
 document.addEventListener("keydown", (e) => {
-  if (state.isModalOpen) return;
+  // When modal is open, only Escape works
+  if (state.isModalOpen) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeEditModal();
+    }
+    return;
+  }
+
   const target = e.target;
-  if (
-    target.tagName === "INPUT" ||
-    target.tagName === "TEXTAREA" ||
-    target.tagName === "SELECT"
-  ) {
+  
+  // Skip shortcuts when typing in input/textarea/select
+  if (target.tagName === "INPUT" || 
+      target.tagName === "TEXTAREA" || 
+      target.tagName === "SELECT") {
     if (target.id === "pageInput") return;
     return;
   }
 
-  if (e.key === "ArrowLeft") {
-    e.preventDefault();
-    goPrevNote();
-  }
-  if (e.key === "ArrowRight") {
-    e.preventDefault();
-    goNextNote();
+  // Keyboard shortcuts
+  switch (e.key) {
+    case "ArrowLeft":
+      e.preventDefault();
+      goPrevNote();
+      break;
+    case "ArrowRight":
+      e.preventDefault();
+      goNextNote();
+      break;
+    case "e":
+    case "E":
+      e.preventDefault();
+      handleEditShortcut();
+      break;
+    case "t":
+    case "T":
+      e.preventDefault();
+      openEditModal(null, null);
+      showToast("📝 Tekan T untuk tambah catatan");
+      break;
+    case "i":
+    case "I":
+      e.preventDefault();
+      handleImportShortcut();
+      break;
+    case "x":
+    case "X":
+      e.preventDefault();
+      handleExportShortcut();
+      break;
   }
 });
 
 // ============================================================
-// EVENT LISTENER UNTUK INPUT NOMOR HALAMAN
+// DOUBLE CLICK TO ADD NOTE
+// ============================================================
+document.addEventListener("dblclick", function(e) {
+  // Cek apakah double click terjadi di area kosong (bukan di dalam note atau modal)
+  if (!e.target.closest('.note-card') && 
+      !e.target.closest('.modal-overlay') && 
+      !e.target.closest('.modal-box') &&
+      !e.target.closest('.filters-bar') &&
+      !e.target.closest('.nav-bar') &&
+      !e.target.closest('.shortcut-footer')) {
+    // if (!state.isModalOpen) {
+    //   openEditModal(null, null);
+    //   showToast("📝 Double-click untuk tambah catatan");
+    // }
+  }
+});
+
+// ============================================================
+// SHORTCUT HANDLERS
+// ============================================================
+function handleEditShortcut() {
+  const filtered = sortNotes(getFilteredNotes());
+  if (filtered.length > 0 && filtered[state.currentNoteIndex]) {
+    const currentNote = filtered[state.currentNoteIndex];
+    const originalNote = state.notes.find(n => n.id === currentNote.id);
+    if (originalNote) {
+      openEditModal(originalNote, originalNote.id);
+      showToast("✏️ Edit catatan");
+    }
+  } else {
+    showToast("📝 Tidak ada catatan untuk diedit", true);
+  }
+}
+
+function handleImportShortcut() {
+  const fileInput = document.getElementById("fileInput");
+  if (fileInput) {
+    fileInput.click();
+    showToast("📥 Pilih file untuk import");
+  } else {
+    showToast("⚠️ File input tidak ditemukan", true);
+  }
+}
+
+function handleExportShortcut() {
+  if (state.notes.length === 0) {
+    showToast("⚠️ Tidak ada catatan untuk diekspor", true);
+    return;
+  }
+  exportNotes();
+}
+
+// ============================================================
+// EVENT LISTENER FOR PAGE NUMBER INPUT
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     const pageInput = document.getElementById('pageInput');
@@ -416,7 +510,15 @@ document.addEventListener('DOMContentLoaded', function() {
 function renderSingleNote(note) {
   const container = document.getElementById("noteDisplay");
   if (!note) {
-    container.innerHTML = `<div class="empty-state"><h3>📭 Belum ada catatan</h3><p>Klik "Tambah" untuk mulai</p></div>`;
+    container.innerHTML = `
+      <div class="empty-state">
+        <h3>📭 Belum ada catatan</h3>
+        <p>Mulai dengan menekan <kbd>T</kbd> atau double-click di area kosong</p>
+        <div class="shortcut-empty">
+          <kbd>T</kbd> Tambah · <kbd>E</kbd> Edit · <kbd>←</kbd> <kbd>→</kbd> Navigasi
+        </div>
+      </div>
+    `;
     return;
   }
 
@@ -430,7 +532,7 @@ function renderSingleNote(note) {
   const pin = n.pin ? "📌" : "";
   const fav = n.favorite ? "⭐" : "";
 
-  // ===== FUNGSI UNTUK RENDER HASIL =====
+  // ===== FUNCTION TO RENDER RESULT =====
   function renderResult(resultData) {
     if (!resultData) return "";
     let html = "";
@@ -775,19 +877,14 @@ window.editNote = function (id) {
   if (note) openEditModal(note, id);
 };
 
-document
-  .getElementById("addNoteBtn")
-  .addEventListener("click", () => openEditModal(null, null));
+// ============================================================
+// NOTE: Tombol tambah sudah dihapus, gunakan shortcut T atau double-click
+// ============================================================
+
 document.getElementById("cancelEdit").addEventListener("click", closeEditModal);
 document
   .getElementById("cancelEditBottom")
   .addEventListener("click", closeEditModal);
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && state.isModalOpen) {
-    closeEditModal();
-  }
-});
 
 // ============================================================
 // QUILL
@@ -933,6 +1030,19 @@ function initToggles() {
       }
     });
   });
+}
+
+// ============================================================
+// EXPORT FUNCTION
+// ============================================================
+function exportNotes() {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(
+    new Blob([JSON.stringify(state.notes, null, 2)]),
+  );
+  a.download = `catatan-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  showToast("📤 Ekspor berhasil");
 }
 
 // ============================================================
@@ -1734,19 +1844,12 @@ document.getElementById("saveNote").addEventListener("click", async () => {
 // ============================================================
 // EXPORT / IMPORT
 // ============================================================
-document.getElementById("exportBtn").addEventListener("click", () => {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(
-    new Blob([JSON.stringify(state.notes, null, 2)]),
-  );
-  a.download = `catatan-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  showToast("Ekspor berhasil");
-});
+document.getElementById("exportBtn").addEventListener("click", exportNotes);
 
 document.getElementById("importBtn").addEventListener("click", () => {
   document.getElementById("fileInput").click();
 });
+
 document.getElementById("fileInput").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -1758,7 +1861,7 @@ document.getElementById("fileInput").addEventListener("change", async (e) => {
         state.notes = data.map((n, i) => ({ ...n, id: i }));
         await saveToStorage();
         render();
-        showToast("Import sukses");
+        showToast("📥 Import sukses");
       } else {
         showToast("Format tidak valid", true);
       }
@@ -1841,8 +1944,14 @@ async function init() {
   render();
   updateSyncStatus("💾 Tersimpan");
   console.log("✅ CatatanKu — Satu Halaman Satu Catatan siap");
-  console.log("⌨️ Gunakan tombol ◀ ▶ atau panah kiri/kanan untuk navigasi");
-  console.log("📝 Masukkan nomor halaman untuk pindah cepat");
+  // console.log("⌨️ Shortcut:");
+  // console.log("  ← →  : Navigasi catatan");
+  // console.log("  E    : Edit catatan yang sedang dilihat");
+  // console.log("  T    : Tambah catatan baru");
+  // console.log("  I    : Import catatan");
+  // console.log("  X    : Export catatan");
+  // console.log("  Esc  : Tutup modal");
+  // console.log("🖱️  Double-click kosong untuk tambah catatan");
 }
 
 document.addEventListener("DOMContentLoaded", () => {

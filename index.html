@@ -6,7 +6,7 @@
     <title>CatatanKu — Satu Halaman Satu Catatan</title>
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 
@@ -18,12 +18,17 @@
         </div>
         <div class="header-actions">
             <span id="totalNotes" class="text-muted">0 catatan</span>
-            <button class="btn" id="addNoteBtn">+ Tambah</button>
             <button class="btn btn-outline" id="themeToggle">🌙</button>
+            <!-- NAVIGASI NOMOR HALAMAN -->
+            <div class="page-nav">
+                <input type="number" id="pageInput" min="1" value="1" class="page-input" />
+                <span class="page-total" id="pageTotal">/ 1</span>
+            </div>
             <button class="btn btn-outline btn-sm" id="exportBtn">📤</button>
             <button class="btn btn-outline btn-sm" id="importBtn">📥</button>
             <input type="file" id="fileInput" hidden />
         </div>
+        <!-- ===== NAVIGATION ===== -->
     </header>
 
     <!-- ===== FILTERS ===== -->
@@ -62,7 +67,6 @@
         </div>
         
         <button class="btn btn-outline" id="nextNoteNav" onclick="goNextNote()">▶</button>
-        <span class="nav-hint">⌨️ ← →</span>
     </div>
 
     <!-- ===== EDIT MODAL ===== -->
@@ -199,6 +203,6 @@
 
     <!-- ===== SCRIPTS ===== -->
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=12"></script>
 </body>
 </html>

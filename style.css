@@ -134,6 +134,57 @@ h3 {
 }
 
 /* =========================================================
+           KEYBOARD SHORTCUT STYLING
+           ========================================================= */
+kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin: 0 2px;
+  line-height: 1.5;
+}
+
+body.dark kbd {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.shortcut-hint-header {
+  font-size: 0.75rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+.shortcut-footer {
+  text-align: center;
+  padding: 14px 16px;
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 2;
+}
+
+.shortcut-footer kbd {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+}
+
+/* =========================================================
            BUTTONS
            ========================================================= */
 .btn {
@@ -530,6 +581,12 @@ h3 {
 .empty-state h3 {
   font-size: 1.2rem;
   margin-bottom: 6px;
+}
+
+.empty-state .shortcut-empty {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 
 /* =========================================================
@@ -1262,6 +1319,15 @@ body.dark .latihan-file-row {
   border-color: var(--border);
 }
 
+body.dark .shortcut-hint-header {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+body.dark .shortcut-footer {
+  border-color: var(--border);
+}
+
 /* =========================================================
            RESPONSIVE
            ========================================================= */
@@ -1368,6 +1434,16 @@ body.dark .latihan-file-row {
   .modal-overlay {
     padding: 10px;
     align-items: flex-start;
+  }
+
+  .shortcut-hint-header {
+    display: none;
+  }
+
+  .shortcut-footer {
+    font-size: 0.7rem;
+    padding: 10px 12px;
+    line-height: 2.2;
   }
 }
 
