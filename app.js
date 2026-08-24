@@ -336,7 +336,11 @@ function updateNavButtons(currentIndex, total) {
   updatePageInput(pageInputTop, pageTotalTop);
   updatePageInput(pageInputBottom, pageTotalBottom);
   
-  document.getElementById("totalNotes").textContent = `${total} catatan`;
+  // Update total notes
+  const totalNotesEl = document.getElementById("totalNotes");
+  if (totalNotesEl) {
+    totalNotesEl.textContent = `${total} catatan`;
+  }
 }
 
 function goPrevNote() {
@@ -738,7 +742,12 @@ function render() {
     updateNavButtons(state.currentNoteIndex, total);
   }
   updateCategoryDropdown();
-  document.getElementById("totalNotes").textContent = `${total} catatan`;
+  
+  // Update total notes
+  const totalNotesEl = document.getElementById("totalNotes");
+  if (totalNotesEl) {
+    totalNotesEl.textContent = `${total} catatan`;
+  }
 }
 
 // ============================================================
