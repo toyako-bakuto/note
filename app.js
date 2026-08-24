@@ -278,7 +278,7 @@ function setupAutoExpand(selector) {
 }
 
 // ============================================================
-// NAVIGATION - WITHOUT WRAP AROUND
+// NAVIGATION - WITH TWO NAV BARS
 // ============================================================
 function navigateToNote(index) {
   const filtered = sortNotes(getFilteredNotes());
@@ -288,7 +288,6 @@ function navigateToNote(index) {
     updateNavButtons(0, 0);
     return;
   }
-  // Batasi index agar tidak keluar dari rentang yang valid
   if (index < 0) index = 0;
   if (index >= filtered.length) index = filtered.length - 1;
   state.currentNoteIndex = index;
@@ -297,28 +296,45 @@ function navigateToNote(index) {
 }
 
 function updateNavButtons(currentIndex, total) {
-  const prevBtn = document.getElementById("prevNoteNav");
-  const nextBtn = document.getElementById("nextNoteNav");
-  const pageInput = document.getElementById("pageInput");
-  const pageTotal = document.getElementById("pageTotal");
+  // Tombol navigasi atas
+  const prevBtnTop = document.getElementById("prevNoteNavTop");
+  const nextBtnTop = document.getElementById("nextNoteNavTop");
+  const pageInputTop = document.getElementById("pageInputTop");
+  const pageTotalTop = document.getElementById("pageTotalTop");
   
-  // Disable tombol jika di ujung
-  if (prevBtn) {
-    prevBtn.disabled = total === 0 || currentIndex <= 0;
-  }
-  if (nextBtn) {
-    nextBtn.disabled = total === 0 || currentIndex >= total - 1;
-  }
+  // Tombol navigasi bawah
+  const prevBtnBottom = document.getElementById("prevNoteNavBottom");
+  const nextBtnBottom = document.getElementById("nextNoteNavBottom");
+  const pageInputBottom = document.getElementById("pageInputBottom");
+  const pageTotalBottom = document.getElementById("pageTotalBottom");
   
-  if (pageInput) {
-    pageInput.value = total > 0 ? currentIndex + 1 : 0;
-    pageInput.max = total > 0 ? total : 1;
-    pageInput.min = 1;
-  }
+  // Update semua tombol navigasi
+  const updateButtons = (prevBtn, nextBtn) => {
+    if (prevBtn) {
+      prevBtn.disabled = total === 0 || currentIndex <= 0;
+    }
+    if (nextBtn) {
+      nextBtn.disabled = total === 0 || currentIndex >= total - 1;
+    }
+  };
   
-  if (pageTotal) {
-    pageTotal.textContent = `/ ${total}`;
-  }
+  updateButtons(prevBtnTop, nextBtnTop);
+  updateButtons(prevBtnBottom, nextBtnBottom);
+  
+  // Update semua page input
+  const updatePageInput = (input, totalEl) => {
+    if (input) {
+      input.value = total > 0 ? currentIndex + 1 : 0;
+      input.max = total > 0 ? total : 1;
+      input.min = 1;
+    }
+    if (totalEl) {
+      totalEl.textContent = `/ ${total}`;
+    }
+  };
+  
+  updatePageInput(pageInputTop, pageTotalTop);
+  updatePageInput(pageInputBottom, pageTotalBottom);
   
   document.getElementById("totalNotes").textContent = `${total} catatan`;
 }
@@ -327,26 +343,22 @@ function goPrevNote() {
   if (state.isModalOpen) return;
   const filtered = sortNotes(getFilteredNotes());
   if (!filtered.length) return;
-  // Hanya pindah ke sebelumnya jika tidak di index 0
   if (state.currentNoteIndex > 0) {
     navigateToNote(state.currentNoteIndex - 1);
   }
-  // Tidak melakukan apa-apa jika sudah di awal
 }
 
 function goNextNote() {
   if (state.isModalOpen) return;
   const filtered = sortNotes(getFilteredNotes());
   if (!filtered.length) return;
-  // Hanya pindah ke berikutnya jika tidak di index terakhir
   if (state.currentNoteIndex < filtered.length - 1) {
     navigateToNote(state.currentNoteIndex + 1);
   }
-  // Tidak melakukan apa-apa jika sudah di akhir
 }
 
-function goToPageNumber() {
-  const pageInput = document.getElementById('pageInput');
+function goToPageNumber(inputId = 'pageInputTop') {
+  const pageInput = document.getElementById(inputId);
   if (!pageInput) return;
   
   const filtered = sortNotes(getFilteredNotes());
@@ -354,6 +366,10 @@ function goToPageNumber() {
   
   if (total === 0) {
     pageInput.value = 0;
+    // Update both inputs
+    const otherInput = inputId === 'pageInputTop' ? 'pageInputBottom' : 'pageInputTop';
+    const other = document.getElementById(otherInput);
+    if (other) other.value = 0;
     return;
   }
   
@@ -367,15 +383,20 @@ function goToPageNumber() {
   }
   
   pageInput.value = pageNumber;
+  
+  // Sync both inputs
+  const otherInput = inputId === 'pageInputTop' ? 'pageInputBottom' : 'pageInputTop';
+  const other = document.getElementById(otherInput);
+  if (other) other.value = pageNumber;
+  
   const index = pageNumber - 1;
   navigateToNote(index);
 }
 
 // ============================================================
-// KEYBOARD SHORTCUTS - FIXED
+// KEYBOARD SHORTCUTS
 // ============================================================
 document.addEventListener("keydown", (e) => {
-  // When modal is open, only Escape works
   if (state.isModalOpen) {
     if (e.key === "Escape") {
       e.preventDefault();
@@ -386,15 +407,13 @@ document.addEventListener("keydown", (e) => {
 
   const target = e.target;
   
-  // Skip shortcuts when typing in input/textarea/select
   if (target.tagName === "INPUT" || 
       target.tagName === "TEXTAREA" || 
       target.tagName === "SELECT") {
-    if (target.id === "pageInput") return;
+    if (target.id === "pageInputTop" || target.id === "pageInputBottom") return;
     return;
   }
 
-  // Keyboard shortcuts
   switch (e.key) {
     case "ArrowLeft":
       e.preventDefault();
@@ -432,7 +451,6 @@ document.addEventListener("keydown", (e) => {
 // DOUBLE CLICK TO ADD NOTE
 // ============================================================
 document.addEventListener("dblclick", function(e) {
-  // Cek apakah double click terjadi di area kosong (bukan di dalam note atau modal)
   if (!e.target.closest('.note-card') && 
       !e.target.closest('.modal-overlay') && 
       !e.target.closest('.modal-box') &&
@@ -482,30 +500,50 @@ function handleExportShortcut() {
 }
 
 // ============================================================
-// EVENT LISTENER FOR PAGE NUMBER INPUT
+// EVENT LISTENER FOR PAGE NUMBER INPUTS
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
-    const pageInput = document.getElementById('pageInput');
-    if (pageInput) {
-        pageInput.addEventListener('keydown', function(e) {
+    // Event listener untuk pageInputTop
+    const pageInputTop = document.getElementById('pageInputTop');
+    if (pageInputTop) {
+        pageInputTop.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                goToPageNumber();
+                goToPageNumber('pageInputTop');
             }
         });
         
-        pageInput.addEventListener('blur', function() {
-            goToPageNumber();
+        pageInputTop.addEventListener('blur', function() {
+            goToPageNumber('pageInputTop');
         });
         
-        pageInput.addEventListener('change', function() {
-            goToPageNumber();
+        pageInputTop.addEventListener('change', function() {
+            goToPageNumber('pageInputTop');
+        });
+    }
+    
+    // Event listener untuk pageInputBottom
+    const pageInputBottom = document.getElementById('pageInputBottom');
+    if (pageInputBottom) {
+        pageInputBottom.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                goToPageNumber('pageInputBottom');
+            }
+        });
+        
+        pageInputBottom.addEventListener('blur', function() {
+            goToPageNumber('pageInputBottom');
+        });
+        
+        pageInputBottom.addEventListener('change', function() {
+            goToPageNumber('pageInputBottom');
         });
     }
 });
 
 // ============================================================
-// RENDER SINGLE NOTE
+// RENDER SINGLE NOTE - FIXED (all descriptions use ql-editor)
 // ============================================================
 function renderSingleNote(note) {
   const container = document.getElementById("noteDisplay");
@@ -544,7 +582,7 @@ function renderSingleNote(note) {
       html = `<div class="code-block" style="margin:6px 0;background:#181818;color:#f0f0ee;padding:10px 14px;border-radius:8px;font-family:monospace;font-size:0.75rem;white-space:pre-wrap;word-break:break-all;">${escapeHTML(resultData.textResult)}</div>`;
     }
     if (resultData.description && resultData.description.length > 0) {
-      html = `<div class="text-sm" style="margin-bottom:4px;color:var(--muted);">${escapeHTML(stripHtml(resultData.description))}</div>` + html;
+      html = `<div class="text-sm" style="margin-bottom:4px;color:var(--muted);">${resultData.description}</div>` + html;
     }
     return html ? `<div style="margin-top:6px;border-top:1px solid var(--border);padding-top:6px;"><span class="text-sm" style="font-weight:600;color:var(--muted);">📊 Hasil:</span>${html}</div>` : "";
   }
@@ -575,7 +613,7 @@ function renderSingleNote(note) {
               <span class="sub-item-title">🏋️ ${escapeHTML(l.title || "Latihan")}</span>
               <span class="sub-item-meta">${(l.files || []).length} file</span>
             </div>
-            ${l.description ? `<div class="text-sm">${escapeHTML(stripHtml(l.description))}</div>` : ""}
+            ${l.description ? `<div class="text-sm"><div class="ql-editor" style="padding:0;">${l.description}</div></div>` : ""}
             <div class="file-list">${filesHtml}</div>
             ${resultHtml}
           </div>
@@ -597,12 +635,12 @@ function renderSingleNote(note) {
               <span class="sub-item-title">🐛 ${escapeHTML(b.title || "Break & Fix")}</span>
               <span class="sub-item-meta">${b.solved ? "✅ Solved" : "⏳ In Progress"}</span>
             </div>
-            ${b.description ? `<div class="text-sm">${escapeHTML(stripHtml(b.description))}</div>` : ""}
+            ${b.description ? `<div class="text-sm"><div class="ql-editor" style="padding:0;">${b.description}</div></div>` : ""}
             <div class="breakfix-row">
               ${b.brokenCode ? `<div><span class="text-sm">🔴 Broken</span><div class="code-block broken">${escapeHTML(b.brokenCode)}</div></div>` : ""}
               ${b.fixedCode ? `<div><span class="text-sm">🟢 Fixed</span><div class="code-block fixed">${escapeHTML(b.fixedCode)}</div></div>` : ""}
             </div>
-            ${b.hint ? `<div class="text-sm">💡 ${escapeHTML(stripHtml(b.hint))}</div>` : ""}
+            ${b.hint ? `<div class="text-sm"><div class="ql-editor" style="padding:0;">${b.hint}</div></div>` : ""}
             ${resultHtml}
             <button class="btn btn-sm btn-outline" onclick="showDiff(${n.id},${bi})">🔍 Diff</button>
           </div>
@@ -623,7 +661,7 @@ function renderSingleNote(note) {
             <div class="sub-item-header">
               <span class="sub-item-title">💻 ${escapeHTML(p.title || "Program")}</span>
             </div>
-            ${p.description ? `<div class="text-sm">${escapeHTML(stripHtml(p.description))}</div>` : ""}
+            ${p.description ? `<div class="text-sm"><div class="ql-editor" style="padding:0;">${p.description}</div></div>` : ""}
             ${p.code ? `<div class="code-block">${escapeHTML(p.code)}</div>` : ""}
             ${resultHtml}
           </div>
@@ -752,8 +790,8 @@ function showDiff(noteIdx, breakfixIdx) {
                         <span>🟢 Ditambahkan</span>
                         <span>🔴 Dihapus</span>
                     </div>
-                    ${b.hint ? `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;"><strong>💡 Hint:</strong> ${escapeHTML(stripHtml(b.hint))}</div>` : ""}
-                    ${b.solution ? `<div><strong>✅ Solusi:</strong> ${escapeHTML(stripHtml(b.solution))}</div>` : ""}
+                    ${b.hint ? `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;"><strong>💡 Hint:</strong> <div class="ql-editor" style="padding:0;">${b.hint}</div></div>` : ""}
+                    ${b.solution ? `<div><strong>✅ Solusi:</strong> <div class="ql-editor" style="padding:0;">${b.solution}</div></div>` : ""}
                 `;
   document.getElementById("diffModal").classList.remove("hidden");
 }
@@ -876,10 +914,6 @@ window.editNote = function (id) {
   const note = state.notes.find((n) => n.id === id);
   if (note) openEditModal(note, id);
 };
-
-// ============================================================
-// NOTE: Tombol tambah sudah dihapus, gunakan shortcut T atau double-click
-// ============================================================
 
 document.getElementById("cancelEdit").addEventListener("click", closeEditModal);
 document
@@ -1056,7 +1090,7 @@ function getResultFromSection(section) {
   const quillId = section.querySelector('[id^="resultDesc_"]')?.id || '';
   let description = '';
   if (quillId && window[quillId]) {
-    description = window[quillId].getText();
+    description = window[quillId].root.innerHTML;
   }
   
   const imageSection = section.querySelector('.result-image-section');
@@ -1185,7 +1219,7 @@ function removeResultImageInSection(btn) {
 }
 
 // ============================================================
-// LATIHAN (modal form)
+// LATIHAN (modal form) - FIXED
 // ============================================================
 function addLatihanToForm(data = null) {
   const list = document.getElementById("latihanList");
@@ -1316,7 +1350,9 @@ function getLatihans() {
     const title = item.querySelector(".latihan-title")?.value || "";
     const quillId = item.dataset.quillId;
     let description = "";
-    if (quillId && window[quillId]) description = window[quillId].getText();
+    if (quillId && window[quillId]) {
+      description = window[quillId].root.innerHTML;
+    }
     const files = [];
     item.querySelectorAll(".latihan-file-row").forEach((el) => {
       const name = el.querySelector(".file-name")?.value;
@@ -1333,7 +1369,7 @@ function getLatihans() {
       const descQuillId = resultSection.querySelector('[id^="latihanResult_"]')?.id || '';
       let descriptionResult = '';
       if (descQuillId && window[descQuillId]) {
-        descriptionResult = window[descQuillId].getText();
+        descriptionResult = window[descQuillId].root.innerHTML;
       }
       
       const imageSection = resultSection.querySelector('.result-image-section');
@@ -1377,7 +1413,7 @@ document
   .addEventListener("click", () => addLatihanToForm());
 
 // ============================================================
-// BREAK & FIX (modal form)
+// BREAK & FIX (modal form) - FIXED
 // ============================================================
 function addBreakfixToForm(data = null) {
   const list = document.getElementById("breakfixList");
@@ -1520,9 +1556,15 @@ function previewBF(btn) {
   let desc = "",
     hint = "",
     sol = "";
-  if (descId && window[descId]) desc = window[descId].getText();
-  if (hintId && window[hintId]) hint = window[hintId].getText();
-  if (solId && window[solId]) sol = window[solId].getText();
+  if (descId && window[descId]) {
+    desc = window[descId].root.innerHTML;
+  }
+  if (hintId && window[hintId]) {
+    hint = window[hintId].root.innerHTML;
+  }
+  if (solId && window[solId]) {
+    sol = window[solId].root.innerHTML;
+  }
 
   const br = broken.split("\n");
   const fi = fixed.split("\n");
@@ -1542,7 +1584,7 @@ function previewBF(btn) {
 
   document.getElementById("diffBody").innerHTML = `
                     <h3 style="font-size:.95rem;margin-bottom:6px;">${escapeHTML(title)}</h3>
-                    ${desc ? `<div style="margin-bottom:8px;"><strong>📝 Deskripsi:</strong> ${escapeHTML(desc)}</div>` : ""}
+                    ${desc ? `<div style="margin-bottom:8px;"><strong>📝 Deskripsi:</strong> <div class="ql-editor" style="padding:0;">${desc}</div></div>` : ""}
                     <table class="diff-table">
                         <thead><tr><th>#</th><th>🔴 Broken</th><th>#</th><th>🟢 Fixed</th></tr></thead>
                         <tbody>${rows}</tbody>
@@ -1552,8 +1594,8 @@ function previewBF(btn) {
                         <span>🟢 Ditambahkan</span>
                         <span>🔴 Dihapus</span>
                     </div>
-                    ${hint ? `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;"><strong>💡 Hint:</strong> ${escapeHTML(hint)}</div>` : ""}
-                    ${sol ? `<div><strong>✅ Solusi:</strong> ${escapeHTML(sol)}</div>` : ""}
+                    ${hint ? `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;"><strong>💡 Hint:</strong> <div class="ql-editor" style="padding:0;">${hint}</div></div>` : ""}
+                    ${sol ? `<div><strong>✅ Solusi:</strong> <div class="ql-editor" style="padding:0;">${sol}</div></div>` : ""}
                 `;
   document.getElementById("diffModal").classList.remove("hidden");
 }
@@ -1572,9 +1614,15 @@ function getBreakfixs() {
     let description = "",
       hint = "",
       solution = "";
-    if (descId && window[descId]) description = window[descId].getText();
-    if (hintId && window[hintId]) hint = window[hintId].getText();
-    if (solId && window[solId]) solution = window[solId].getText();
+    if (descId && window[descId]) {
+      description = window[descId].root.innerHTML;
+    }
+    if (hintId && window[hintId]) {
+      hint = window[hintId].root.innerHTML;
+    }
+    if (solId && window[solId]) {
+      solution = window[solId].root.innerHTML;
+    }
     
     const resultSection = item.querySelector('.breakfix-result-section');
     let resultData = null;
@@ -1584,7 +1632,7 @@ function getBreakfixs() {
       const descQuillId = resultSection.querySelector('[id^="bfResult_"]')?.id || '';
       let descriptionResult = '';
       if (descQuillId && window[descQuillId]) {
-        descriptionResult = window[descQuillId].getText();
+        descriptionResult = window[descQuillId].root.innerHTML;
       }
       
       const imageSection = resultSection.querySelector('.result-image-section');
@@ -1632,7 +1680,7 @@ document
   .addEventListener("click", () => addBreakfixToForm());
 
 // ============================================================
-// PROGRAM (modal form)
+// PROGRAM (modal form) - FIXED
 // ============================================================
 function addProgramToForm(data = null) {
   const list = document.getElementById("programList");
@@ -1725,7 +1773,9 @@ function getPrograms() {
     const code = item.querySelector(".prog-code")?.value || "";
     const quillId = item.dataset.quillId;
     let description = "";
-    if (quillId && window[quillId]) description = window[quillId].getText();
+    if (quillId && window[quillId]) {
+      description = window[quillId].root.innerHTML;
+    }
     
     const resultSection = item.querySelector('.program-result-section');
     let resultData = null;
@@ -1735,7 +1785,7 @@ function getPrograms() {
       const descQuillId = resultSection.querySelector('[id^="progResult_"]')?.id || '';
       let descriptionResult = '';
       if (descQuillId && window[descQuillId]) {
-        descriptionResult = window[descQuillId].getText();
+        descriptionResult = window[descQuillId].root.innerHTML;
       }
       
       const imageSection = resultSection.querySelector('.result-image-section');
@@ -1944,14 +1994,6 @@ async function init() {
   render();
   updateSyncStatus("💾 Tersimpan");
   console.log("✅ CatatanKu — Satu Halaman Satu Catatan siap");
-  // console.log("⌨️ Shortcut:");
-  // console.log("  ← →  : Navigasi catatan");
-  // console.log("  E    : Edit catatan yang sedang dilihat");
-  // console.log("  T    : Tambah catatan baru");
-  // console.log("  I    : Import catatan");
-  // console.log("  X    : Export catatan");
-  // console.log("  Esc  : Tutup modal");
-  // console.log("🖱️  Double-click kosong untuk tambah catatan");
 }
 
 document.addEventListener("DOMContentLoaded", () => {

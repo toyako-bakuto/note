@@ -11,7 +11,7 @@
         "latihans": [
             {
                 "title": "Membuat halaman pertama",
-                "description": "-",
+                "description": "<p>Buat sebuah halaman HTML sederhana yang menampilkan profil seorang siswa dengan menggunakan penulisan tag dan attribute dalam kombinasi huruf uppercase dan lowercase, misalnya beberapa tag ditulis dengan huruf kapital dan beberapa lainnya dengan huruf kecil. Pastikan halaman tetap dapat dibaca oleh browser dan perhatikan bahwa HTML tidak membedakan huruf besar dan huruf kecil pada tag maupun attribute. Target: memahami konsep case insensitivity dalam HTML dan mengetahui bahwa &lt;P&gt;, &lt;p&gt;, dan &lt;p&gt; tetap dikenali sebagai tag yang sama.<\/p>",
                 "files": [
                     {
                         "name": "index.html",
@@ -24,12 +24,12 @@
         "programs": [
             {
                 "title": "index.html",
-                "description": "Contoh sederhana halaman HTML",
+                "description": "<p>Contoh sederhana halaman HTML<\/p>",
                 "code": "<!DOCTYPE html>\n<html lang=\"id\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\n    <title>Belajar HTML<\/title>\n<\/head>\n<body>\n\n    <h1>Hello World<\/h1>\n    <p>Saya sedang belajar HTML.<\/p>\n\n<\/body>\n<\/html>"
             }
         ],
         "created": "20\/8\/2026",
-        "edited": "20\/8\/2026",
+        "edited": "24\/8\/2026",
         "pin": false,
         "favorite": false,
         "id": 0

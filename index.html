@@ -17,18 +17,15 @@
             <div class="subtitle">Satu halaman · satu catatan</div>
         </div>
         <div class="header-actions">
-            <span id="totalNotes" class="text-muted">0 catatan</span>
             <button class="btn btn-outline" id="themeToggle">🌙</button>
-            <!-- NAVIGASI NOMOR HALAMAN -->
             <div class="page-nav">
-                <input type="number" id="pageInput" min="1" value="1" class="page-input" />
-                <span class="page-total" id="pageTotal">/ 1</span>
+                <input type="number" id="pageInputTop" min="1" value="1" class="page-input" />
+                <span class="page-total" id="pageTotalTop">/ 0</span>
             </div>
             <button class="btn btn-outline btn-sm" id="exportBtn">📤</button>
             <button class="btn btn-outline btn-sm" id="importBtn">📥</button>
             <input type="file" id="fileInput" hidden />
         </div>
-        <!-- ===== NAVIGATION ===== -->
     </header>
 
     <!-- ===== FILTERS ===== -->
@@ -55,18 +52,17 @@
     <!-- ===== NOTE DISPLAY ===== -->
     <div id="noteDisplay"></div>
 
-    <!-- ===== NAVIGATION ===== -->
-    <div class="nav-bar">
-        <button class="btn btn-outline" id="prevNoteNav" onclick="goPrevNote()">◀</button>
+    <!-- ===== NAVIGASI BAWAH ===== -->
+    <div class="nav-bar nav-bottom">
+        <button class="btn btn-outline" id="prevNoteNavBottom" onclick="goPrevNote()">◀</button>
         
-        <!-- NAVIGASI NOMOR HALAMAN -->
         <div class="page-nav">
             <span class="page-label">Halaman</span>
-            <input type="number" id="pageInput" min="1" value="1" class="page-input" />
-            <span class="page-total" id="pageTotal">/ 1</span>
+            <input type="number" id="pageInputBottom" min="1" value="1" class="page-input" />
+            <span class="page-total" id="pageTotalBottom">/ 0</span>
         </div>
         
-        <button class="btn btn-outline" id="nextNoteNav" onclick="goNextNote()">▶</button>
+        <button class="btn btn-outline" id="nextNoteNavBottom" onclick="goNextNote()">▶</button>
     </div>
 
     <!-- ===== EDIT MODAL ===== -->
