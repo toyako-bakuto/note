@@ -278,7 +278,7 @@ function setupAutoExpand(selector) {
 }
 
 // ============================================================
-// NAVIGATION - WITH TWO NAV BARS
+// NAVIGATION - WITH TWO NAV BARS - FIXED
 // ============================================================
 function navigateToNote(index) {
   const filtered = sortNotes(getFilteredNotes());
@@ -718,6 +718,7 @@ function renderSingleNote(note) {
 
 function updateCategoryDropdown() {
   const sel = document.getElementById("categorySelect");
+  if (!sel) return;
   const cats = new Set(state.notes.map((n) => n.category || "Umum"));
   let html = '<option value="ALL">Semua Kategori</option>';
   cats.forEach((c) => (html += `<option value="${c}">${c}</option>`));
@@ -726,11 +727,12 @@ function updateCategoryDropdown() {
 }
 
 // ============================================================
-// WRAPPER RENDER
+// WRAPPER RENDER - FIXED
 // ============================================================
 function render() {
   const filtered = sortNotes(getFilteredNotes());
   const total = filtered.length;
+  
   if (total === 0) {
     state.currentNoteIndex = 0;
     renderSingleNote(null);
@@ -741,6 +743,7 @@ function render() {
     renderSingleNote(filtered[state.currentNoteIndex]);
     updateNavButtons(state.currentNoteIndex, total);
   }
+  
   updateCategoryDropdown();
   
   // Update total notes
@@ -756,13 +759,15 @@ function render() {
 function openModal() {
   state.isModalOpen = true;
   document.body.classList.add("modal-open");
-  document.getElementById("editModal").classList.remove("hidden");
+  const modal = document.getElementById("editModal");
+  if (modal) modal.classList.remove("hidden");
 }
 
 function closeModal() {
   state.isModalOpen = false;
   document.body.classList.remove("modal-open");
-  document.getElementById("editModal").classList.add("hidden");
+  const modal = document.getElementById("editModal");
+  if (modal) modal.classList.add("hidden");
 }
 
 // ============================================================
@@ -789,7 +794,9 @@ function showDiff(noteIdx, breakfixIdx) {
                     </tr>`;
   }
 
-  document.getElementById("diffBody").innerHTML = `
+  const diffBody = document.getElementById("diffBody");
+  if (diffBody) {
+    diffBody.innerHTML = `
                     <table class="diff-table">
                         <thead><tr><th>#</th><th>🔴 Broken</th><th>#</th><th>🟢 Fixed</th></tr></thead>
                         <tbody>${rows}</tbody>
@@ -802,16 +809,28 @@ function showDiff(noteIdx, breakfixIdx) {
                     ${b.hint ? `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;"><strong>💡 Hint:</strong> <div class="ql-editor" style="padding:0;">${b.hint}</div></div>` : ""}
                     ${b.solution ? `<div><strong>✅ Solusi:</strong> <div class="ql-editor" style="padding:0;">${b.solution}</div></div>` : ""}
                 `;
-  document.getElementById("diffModal").classList.remove("hidden");
+  }
+  
+  const diffModal = document.getElementById("diffModal");
+  if (diffModal) diffModal.classList.remove("hidden");
 }
 
-document.getElementById("closeDiffBtn").addEventListener("click", () => {
-  document.getElementById("diffModal").classList.add("hidden");
-});
-document.getElementById("diffModal").addEventListener("click", (e) => {
-  if (e.target === e.currentTarget)
-    document.getElementById("diffModal").classList.add("hidden");
-});
+const closeDiffBtn = document.getElementById("closeDiffBtn");
+if (closeDiffBtn) {
+  closeDiffBtn.addEventListener("click", () => {
+    const diffModal = document.getElementById("diffModal");
+    if (diffModal) diffModal.classList.add("hidden");
+  });
+}
+
+const diffModal = document.getElementById("diffModal");
+if (diffModal) {
+  diffModal.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) {
+      diffModal.classList.add("hidden");
+    }
+  });
+}
 
 // ============================================================
 // TOGGLES
@@ -848,51 +867,55 @@ window.deleteNote = async function (id) {
 // ============================================================
 function openEditModal(noteData = null, editId = null) {
   state.editingIndex = editId;
-  document.getElementById("modalTitle").textContent =
-    editId !== null ? "✏️ Edit Catatan" : "📝 Tambah Catatan";
+  const modalTitle = document.getElementById("modalTitle");
+  if (modalTitle) {
+    modalTitle.textContent = editId !== null ? "✏️ Edit Catatan" : "📝 Tambah Catatan";
+  }
 
   openModal();
 
   if (noteData) {
-    document.getElementById("noteTitle").value = noteData.title || "";
-    document.getElementById("noteCategory").value = noteData.category || "Umum";
-    document
-      .querySelectorAll('input[name="understanding"]')
-      .forEach(
-        (r) => (r.checked = r.value === (noteData.understanding || "belum")),
-      );
-    document
-      .querySelectorAll('input[name="fundamentalType"]')
-      .forEach(
-        (r) =>
-          (r.checked =
-            r.value === (noteData.fundamentalType || "nonfundamental")),
-      );
-    document.getElementById("noteSyntaxCode").value = noteData.syntaxCode || "";
+    const titleEl = document.getElementById("noteTitle");
+    if (titleEl) titleEl.value = noteData.title || "";
+    
+    const categoryEl = document.getElementById("noteCategory");
+    if (categoryEl) categoryEl.value = noteData.category || "Umum";
+    
+    document.querySelectorAll('input[name="understanding"]').forEach((r) => {
+      r.checked = r.value === (noteData.understanding || "belum");
+    });
+    
+    document.querySelectorAll('input[name="fundamentalType"]').forEach((r) => {
+      r.checked = r.value === (noteData.fundamentalType || "nonfundamental");
+    });
+    
+    const syntaxEl = document.getElementById("noteSyntaxCode");
+    if (syntaxEl) syntaxEl.value = noteData.syntaxCode || "";
+    
     setQuillContent("quillUnderstand", "understand", noteData.understand || "");
-    setQuillContent(
-      "quillNotUnderstand",
-      "notUnderstand",
-      noteData.notUnderstand || "",
-    );
-    setQuillContent(
-      "quillCommonMistakes",
-      "commonMistakes",
-      noteData.commonMistakes || "",
-    );
+    setQuillContent("quillNotUnderstand", "notUnderstand", noteData.notUnderstand || "");
+    setQuillContent("quillCommonMistakes", "commonMistakes", noteData.commonMistakes || "");
     setLatihans(noteData.latihans || []);
     setBreakfixs(noteData.breakfixs || []);
     setPrograms(noteData.programs || []);
   } else {
-    document.getElementById("noteTitle").value = "";
-    document.getElementById("noteCategory").value = "Umum";
-    document
-      .querySelectorAll('input[name="understanding"]')
-      .forEach((r) => (r.checked = r.value === "belum"));
-    document
-      .querySelectorAll('input[name="fundamentalType"]')
-      .forEach((r) => (r.checked = r.value === "nonfundamental"));
-    document.getElementById("noteSyntaxCode").value = "";
+    const titleEl = document.getElementById("noteTitle");
+    if (titleEl) titleEl.value = "";
+    
+    const categoryEl = document.getElementById("noteCategory");
+    if (categoryEl) categoryEl.value = "Umum";
+    
+    document.querySelectorAll('input[name="understanding"]').forEach((r) => {
+      r.checked = r.value === "belum";
+    });
+    
+    document.querySelectorAll('input[name="fundamentalType"]').forEach((r) => {
+      r.checked = r.value === "nonfundamental";
+    });
+    
+    const syntaxEl = document.getElementById("noteSyntaxCode");
+    if (syntaxEl) syntaxEl.value = "";
+    
     setQuillContent("quillUnderstand", "understand", "");
     setQuillContent("quillNotUnderstand", "notUnderstand", "");
     setQuillContent("quillCommonMistakes", "commonMistakes", "");
@@ -924,10 +947,11 @@ window.editNote = function (id) {
   if (note) openEditModal(note, id);
 };
 
-document.getElementById("cancelEdit").addEventListener("click", closeEditModal);
-document
-  .getElementById("cancelEditBottom")
-  .addEventListener("click", closeEditModal);
+const cancelEdit = document.getElementById("cancelEdit");
+if (cancelEdit) cancelEdit.addEventListener("click", closeEditModal);
+
+const cancelEditBottom = document.getElementById("cancelEditBottom");
+if (cancelEditBottom) cancelEditBottom.addEventListener("click", closeEditModal);
 
 // ============================================================
 // QUILL
@@ -1228,10 +1252,11 @@ function removeResultImageInSection(btn) {
 }
 
 // ============================================================
-// LATIHAN (modal form) - FIXED
+// LATIHAN (modal form)
 // ============================================================
 function addLatihanToForm(data = null) {
   const list = document.getElementById("latihanList");
+  if (!list) return;
   const idx = list.children.length;
   const id = "latihanDesc_" + Date.now() + "_" + state.latihanQuillIdCounter++;
   const resultId = "latihanResult_" + Date.now() + "_" + state.latihanQuillIdCounter++;
@@ -1413,19 +1438,22 @@ function getLatihans() {
 
 function setLatihans(data) {
   const list = document.getElementById("latihanList");
+  if (!list) return;
   list.innerHTML = "";
   if (data && data.length) data.forEach((d) => addLatihanToForm(d));
 }
 
-document
-  .getElementById("addLatihanBtn")
-  .addEventListener("click", () => addLatihanToForm());
+const addLatihanBtn = document.getElementById("addLatihanBtn");
+if (addLatihanBtn) {
+  addLatihanBtn.addEventListener("click", () => addLatihanToForm());
+}
 
 // ============================================================
-// BREAK & FIX (modal form) - FIXED
+// BREAK & FIX (modal form)
 // ============================================================
 function addBreakfixToForm(data = null) {
   const list = document.getElementById("breakfixList");
+  if (!list) return;
   const idx = list.children.length;
   const descId = "bfDesc_" + Date.now() + "_" + state.breakfixQuillIdCounter++;
   const hintId = "bfHint_" + Date.now() + "_" + state.breakfixQuillIdCounter++;
@@ -1591,7 +1619,9 @@ function previewBF(btn) {
                     </tr>`;
   }
 
-  document.getElementById("diffBody").innerHTML = `
+  const diffBody = document.getElementById("diffBody");
+  if (diffBody) {
+    diffBody.innerHTML = `
                     <h3 style="font-size:.95rem;margin-bottom:6px;">${escapeHTML(title)}</h3>
                     ${desc ? `<div style="margin-bottom:8px;"><strong>📝 Deskripsi:</strong> <div class="ql-editor" style="padding:0;">${desc}</div></div>` : ""}
                     <table class="diff-table">
@@ -1606,7 +1636,10 @@ function previewBF(btn) {
                     ${hint ? `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;"><strong>💡 Hint:</strong> <div class="ql-editor" style="padding:0;">${hint}</div></div>` : ""}
                     ${sol ? `<div><strong>✅ Solusi:</strong> <div class="ql-editor" style="padding:0;">${sol}</div></div>` : ""}
                 `;
-  document.getElementById("diffModal").classList.remove("hidden");
+  }
+  
+  const diffModal = document.getElementById("diffModal");
+  if (diffModal) diffModal.classList.remove("hidden");
 }
 
 function getBreakfixs() {
@@ -1680,19 +1713,22 @@ function getBreakfixs() {
 
 function setBreakfixs(data) {
   const list = document.getElementById("breakfixList");
+  if (!list) return;
   list.innerHTML = "";
   if (data && data.length) data.forEach((d) => addBreakfixToForm(d));
 }
 
-document
-  .getElementById("addBreakfixBtn")
-  .addEventListener("click", () => addBreakfixToForm());
+const addBreakfixBtn = document.getElementById("addBreakfixBtn");
+if (addBreakfixBtn) {
+  addBreakfixBtn.addEventListener("click", () => addBreakfixToForm());
+}
 
 // ============================================================
-// PROGRAM (modal form) - FIXED
+// PROGRAM (modal form)
 // ============================================================
 function addProgramToForm(data = null) {
   const list = document.getElementById("programList");
+  if (!list) return;
   const idx = list.children.length;
   const id = "progDesc_" + Date.now() + "_" + state.programQuillIdCounter++;
   const resultId = "progResult_" + Date.now() + "_" + state.programQuillIdCounter++;
@@ -1829,148 +1865,186 @@ function getPrograms() {
 
 function setPrograms(data) {
   const list = document.getElementById("programList");
+  if (!list) return;
   list.innerHTML = "";
   if (data && data.length) data.forEach((d) => addProgramToForm(d));
 }
 
-document
-  .getElementById("addProgramBtn")
-  .addEventListener("click", () => addProgramToForm());
+const addProgramBtn = document.getElementById("addProgramBtn");
+if (addProgramBtn) {
+  addProgramBtn.addEventListener("click", () => addProgramToForm());
+}
 
 // ============================================================
 // SAVE
 // ============================================================
-document.getElementById("saveNote").addEventListener("click", async () => {
-  const title = document.getElementById("noteTitle").value.trim();
-  if (!title) {
-    showToast("Judul wajib diisi!", true);
-    return;
-  }
-
-  const now = new Date().toLocaleDateString("id-ID");
-  const understanding =
-    document.querySelector('input[name="understanding"]:checked')?.value ||
-    "belum";
-  const fundamentalType =
-    document.querySelector('input[name="fundamentalType"]:checked')?.value ||
-    "nonfundamental";
-  const category = document.getElementById("noteCategory").value;
-  const syntaxCode = document.getElementById("noteSyntaxCode").value;
-
-  const note = {
-    title,
-    category,
-    understanding,
-    fundamentalType,
-    syntaxCode,
-    understand: getQuillContent("quillUnderstand", "understand"),
-    notUnderstand: getQuillContent("quillNotUnderstand", "notUnderstand"),
-    commonMistakes: getQuillContent("quillCommonMistakes", "commonMistakes"),
-    latihans: getLatihans(),
-    breakfixs: getBreakfixs(),
-    programs: getPrograms(),
-    created: now,
-    edited: now,
-    pin: false,
-    favorite: false,
-  };
-
-  if (state.editingIndex !== null) {
-    const existing = state.notes.find((n) => n.id === state.editingIndex);
-    if (existing) {
-      note.created = existing.created;
-      note.pin = existing.pin;
-      note.favorite = existing.favorite;
-      note.id = existing.id;
-      const idx = state.notes.indexOf(existing);
-      state.notes[idx] = note;
+const saveNoteBtn = document.getElementById("saveNote");
+if (saveNoteBtn) {
+  saveNoteBtn.addEventListener("click", async () => {
+    const titleEl = document.getElementById("noteTitle");
+    const title = titleEl ? titleEl.value.trim() : "";
+    if (!title) {
+      showToast("Judul wajib diisi!", true);
+      return;
     }
-    showToast("Catatan diperbarui");
-  } else {
-    const newId = state.notes.length
-      ? Math.max(...state.notes.map((n) => n.id)) + 1
-      : 0;
-    note.id = newId;
-    state.notes.push(note);
-    showToast("Catatan ditambahkan");
-  }
 
-  await saveToStorage();
-  render();
-  closeEditModal();
-});
+    const now = new Date().toLocaleDateString("id-ID");
+    const understanding =
+      document.querySelector('input[name="understanding"]:checked')?.value ||
+      "belum";
+    const fundamentalType =
+      document.querySelector('input[name="fundamentalType"]:checked')?.value ||
+      "nonfundamental";
+    const categoryEl = document.getElementById("noteCategory");
+    const category = categoryEl ? categoryEl.value : "Umum";
+    const syntaxEl = document.getElementById("noteSyntaxCode");
+    const syntaxCode = syntaxEl ? syntaxEl.value : "";
+
+    const note = {
+      title,
+      category,
+      understanding,
+      fundamentalType,
+      syntaxCode,
+      understand: getQuillContent("quillUnderstand", "understand"),
+      notUnderstand: getQuillContent("quillNotUnderstand", "notUnderstand"),
+      commonMistakes: getQuillContent("quillCommonMistakes", "commonMistakes"),
+      latihans: getLatihans(),
+      breakfixs: getBreakfixs(),
+      programs: getPrograms(),
+      created: now,
+      edited: now,
+      pin: false,
+      favorite: false,
+    };
+
+    if (state.editingIndex !== null) {
+      const existing = state.notes.find((n) => n.id === state.editingIndex);
+      if (existing) {
+        note.created = existing.created;
+        note.pin = existing.pin;
+        note.favorite = existing.favorite;
+        note.id = existing.id;
+        const idx = state.notes.indexOf(existing);
+        state.notes[idx] = note;
+      }
+      showToast("Catatan diperbarui");
+    } else {
+      const newId = state.notes.length
+        ? Math.max(...state.notes.map((n) => n.id)) + 1
+        : 0;
+      note.id = newId;
+      state.notes.push(note);
+      showToast("Catatan ditambahkan");
+    }
+
+    await saveToStorage();
+    render();
+    closeEditModal();
+  });
+}
 
 // ============================================================
 // EXPORT / IMPORT
 // ============================================================
-document.getElementById("exportBtn").addEventListener("click", exportNotes);
+const exportBtn = document.getElementById("exportBtn");
+if (exportBtn) exportBtn.addEventListener("click", exportNotes);
 
-document.getElementById("importBtn").addEventListener("click", () => {
-  document.getElementById("fileInput").click();
-});
+const importBtn = document.getElementById("importBtn");
+if (importBtn) {
+  importBtn.addEventListener("click", () => {
+    const fileInput = document.getElementById("fileInput");
+    if (fileInput) fileInput.click();
+  });
+}
 
-document.getElementById("fileInput").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async () => {
-    try {
-      const data = JSON.parse(reader.result);
-      if (Array.isArray(data)) {
-        state.notes = data.map((n, i) => ({ ...n, id: i }));
-        await saveToStorage();
-        render();
-        showToast("📥 Import sukses");
-      } else {
-        showToast("Format tidak valid", true);
+const fileInput = document.getElementById("fileInput");
+if (fileInput) {
+  fileInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (Array.isArray(data)) {
+          state.notes = data.map((n, i) => ({ ...n, id: i }));
+          await saveToStorage();
+          render();
+          showToast("📥 Import sukses");
+        } else {
+          showToast("Format tidak valid", true);
+        }
+      } catch (err) {
+        showToast("File rusak", true);
       }
-    } catch (err) {
-      showToast("File rusak", true);
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = "";
-});
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+}
 
 // ============================================================
 // FILTERS
 // ============================================================
-document.getElementById("categorySelect").addEventListener("change", (e) => {
-  state.selectedCategory = e.target.value;
-  render();
-});
-document
-  .getElementById("understandingFilter")
-  .addEventListener("change", (e) => {
+const categorySelect = document.getElementById("categorySelect");
+if (categorySelect) {
+  categorySelect.addEventListener("change", (e) => {
+    state.selectedCategory = e.target.value;
+    render();
+  });
+}
+
+const understandingFilter = document.getElementById("understandingFilter");
+if (understandingFilter) {
+  understandingFilter.addEventListener("change", (e) => {
     state.understandingFilter = e.target.value;
     render();
   });
-document.getElementById("sortBy").addEventListener("change", (e) => {
-  state.sortBy = e.target.value;
-  render();
-});
-document.getElementById("resetFilter").addEventListener("click", () => {
-  state.selectedCategory = "ALL";
-  state.understandingFilter = "ALL";
-  state.sortBy = "default";
-  document.getElementById("categorySelect").value = "ALL";
-  document.getElementById("understandingFilter").value = "ALL";
-  document.getElementById("sortBy").value = "default";
-  document.getElementById("searchInput").value = "";
-  render();
-  showToast("Filter direset");
-});
-document.getElementById("searchInput").addEventListener("input", render);
+}
+
+const sortBy = document.getElementById("sortBy");
+if (sortBy) {
+  sortBy.addEventListener("change", (e) => {
+    state.sortBy = e.target.value;
+    render();
+  });
+}
+
+const resetFilter = document.getElementById("resetFilter");
+if (resetFilter) {
+  resetFilter.addEventListener("click", () => {
+    state.selectedCategory = "ALL";
+    state.understandingFilter = "ALL";
+    state.sortBy = "default";
+    const catSelect = document.getElementById("categorySelect");
+    if (catSelect) catSelect.value = "ALL";
+    const undFilter = document.getElementById("understandingFilter");
+    if (undFilter) undFilter.value = "ALL";
+    const sortSelect = document.getElementById("sortBy");
+    if (sortSelect) sortSelect.value = "default";
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) searchInput.value = "";
+    render();
+    showToast("Filter direset");
+  });
+}
+
+const searchInput = document.getElementById("searchInput");
+if (searchInput) searchInput.addEventListener("input", render);
 
 // ============================================================
 // THEME
 // ============================================================
-document.getElementById("themeToggle").addEventListener("click", () => {
-  document.body.classList.toggle("dark");
-  const isDark = document.body.classList.contains("dark");
-  document.getElementById("themeToggle").textContent = isDark ? "☀️" : "🌙";
-  localStorage.setItem("catatan_theme", isDark ? "dark" : "light");
-});
+const themeToggle = document.getElementById("themeToggle");
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    const isDark = document.body.classList.contains("dark");
+    themeToggle.textContent = isDark ? "☀️" : "🌙";
+    localStorage.setItem("catatan_theme", isDark ? "dark" : "light");
+  });
+}
 
 // ============================================================
 // INIT
@@ -1979,7 +2053,8 @@ async function init() {
   const savedTheme = localStorage.getItem("catatan_theme");
   if (savedTheme === "dark") {
     document.body.classList.add("dark");
-    document.getElementById("themeToggle").textContent = "☀️";
+    const themeToggleEl = document.getElementById("themeToggle");
+    if (themeToggleEl) themeToggleEl.textContent = "☀️";
   }
 
   setupAutoExpand(
