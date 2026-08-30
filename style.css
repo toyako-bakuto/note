@@ -1222,6 +1222,197 @@ body.dark .program-result-section .btn-outline.active {
 }
 
 /* =========================================================
+   LATIHAN DISPLAY - GITHUB STYLE
+   ========================================================= */
+
+.latihan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.latihan-title-link {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.latihan-title-link:hover {
+    text-decoration: underline;
+}
+
+.latihan-title-link .external-icon {
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
+
+.btn-github {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #24292e;
+    color: #ffffff;
+    border: none;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    min-height: 32px;
+    cursor: pointer;
+}
+
+.btn-github:hover {
+    background: #2f363d;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-github:active {
+    transform: translateY(0);
+}
+
+body.dark .btn-github {
+    background: #30363d;
+    color: #f0f6fc;
+}
+
+body.dark .btn-github:hover {
+    background: #3d444d;
+}
+
+.btn-github svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+.latihan-files-github {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+    padding: 4px 0;
+}
+
+.latihan-file-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-family: monospace;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.latihan-file-link:hover {
+    background: var(--border);
+    border-color: var(--border-strong);
+}
+
+body.dark .latihan-file-link {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+body.dark .latihan-file-link:hover {
+    background: var(--border);
+}
+
+.latihan-description {
+    margin: 6px 0 8px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text);
+}
+
+.latihan-description .ql-editor {
+    padding: 0 !important;
+}
+
+.latihan-description .ql-editor p {
+    margin: 4px 0;
+}
+
+.latihan-result-display {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+
+.latihan-result-display .result-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* File URL input in modal */
+.file-url-input {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    background: var(--bg);
+    color: var(--text);
+    transition: border-color var(--transition);
+}
+
+.file-url-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+}
+
+.file-url-input::placeholder {
+    color: var(--muted);
+    opacity: 0.6;
+}
+
+/* Responsive untuk latihan */
+@media (max-width: 480px) {
+    .latihan-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+    
+    .btn-github {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        min-height: 28px;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .latihan-files-github {
+        gap: 4px;
+    }
+    
+    .latihan-file-link {
+        font-size: 0.65rem;
+        padding: 2px 8px;
+    }
+}
+
+/* =========================================================
            DARK THEME
            ========================================================= */
 body.dark {

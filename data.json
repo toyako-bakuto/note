@@ -291,11 +291,11 @@
         "latihans": [
             {
                 "title": "Menggunakan Tag dan Attribute",
-                "description": "Buat halaman sederhana yang menggunakan beberapa tag dan attribute.",
+                "description": "<p>Buat halaman sederhana yang menggunakan beberapa tag dan attribute.<\/p>",
                 "files": [
                     {
                         "name": "index.html",
-                        "content": "<!DOCTYPE html>\n<html lang=\"id\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Tags dan Attributes<\/title>\n<\/head>\n<body>\n\n    <h1>Belajar HTML<\/h1>\n\n    <p>Saya sedang belajar tag dan attribute.<\/p>\n\n    <a href=\"https:\/\/example.com\">Kunjungi Website<\/a>\n\n    <img src=\"gambar.jpg\" alt=\"Contoh gambar\">\n\n<\/body>\n<\/html>"
+                        "url": "https:\/\/github.com\/toyako-bakuto\/note"
                     }
                 ]
             }
@@ -304,12 +304,12 @@
         "programs": [
             {
                 "title": "Tag dan Attribute",
-                "description": "Contoh sederhana penggunaan tag dan attribute",
+                "description": "<p>Contoh sederhana penggunaan tag dan attribute<\/p>",
                 "code": "<h1>Judul<\/h1>\n\n<a href=\"https:\/\/example.com\">Link<\/a>\n\n<img src=\"gambar.jpg\" alt=\"Deskripsi gambar\">\n\nTag    → Menentukan struktur atau jenis konten\nAttribute → Memberikan informasi tambahan"
             }
         ],
         "created": "20\/8\/2026",
-        "edited": "20\/8\/2026",
+        "edited": "30\/8\/2026",
         "pin": false,
         "favorite": false,
         "id": 8

@@ -591,35 +591,60 @@ function renderSingleNote(note) {
     return html ? `<div style="margin-top:6px;border-top:1px solid var(--border);padding-top:6px;"><span class="text-sm" style="font-weight:600;color:var(--muted);">📊 Hasil:</span>${html}</div>` : "";
   }
 
-  // ===== LATIHAN =====
+  // ===== LATIHAN - GITHUB STYLE =====
   let latihanHtml = "";
   if (n.latihans && n.latihans.length) {
     latihanHtml = n.latihans
       .map((l, li) => {
+        // Generate file links as GitHub-style buttons
         const filesHtml = (l.files || [])
-          .map(
-            (f) => `
-              <div class="file-item-wrapper">
-                <div class="file-header">
+          .map((f) => {
+            // If file has a URL (github link), render as button
+            if (f.url) {
+              return `
+                <a href="${escapeHTML(f.url)}" target="_blank" rel="noopener noreferrer" class="btn-github">
+                  <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                  </svg>
+                  ${escapeHTML(f.name)}
+                </a>
+              `;
+            }
+            // Fallback: show as file with content if no URL
+            if (f.content) {
+              return `
+                <span class="latihan-file-link">
                   ${getFileIcon(f.name)} ${escapeHTML(f.name)}
-                </div>
-                <div class="file-content-display">${escapeHTML(f.content)}</div>
-              </div>
-            `,
-          )
+                </span>
+              `;
+            }
+            // Minimal display
+            return `
+              <span class="latihan-file-link">
+                ${getFileIcon(f.name)} ${escapeHTML(f.name)}
+              </span>
+            `;
+          })
           .join("");
         
+        // Build result HTML
         const resultHtml = renderResult(l.result);
         
         return `
           <div class="sub-item">
-            <div class="sub-item-header">
-              <span class="sub-item-title">🏋️ ${escapeHTML(l.title || "Latihan")}</span>
+            <div class="latihan-header">
+              <span class="latihan-title-link">
+                🏋️ ${escapeHTML(l.title || "Latihan")}
+                ${l.link ? `<a href="${escapeHTML(l.link)}" target="_blank" rel="noopener noreferrer" style="font-size:0.7rem;color:var(--muted);margin-left:4px;">🔗</a>` : ''}
+              </span>
               <span class="sub-item-meta">${(l.files || []).length} file</span>
             </div>
-            ${l.description ? `<div class="text-sm"><div class="ql-editor" style="padding:0;">${l.description}</div></div>` : ""}
-            <div class="file-list">${filesHtml}</div>
-            ${resultHtml}
+            
+            ${l.description ? `<div class="latihan-description"><div class="ql-editor" style="padding:0;">${l.description}</div></div>` : ""}
+            
+            ${filesHtml ? `<div class="latihan-files-github">${filesHtml}</div>` : ""}
+            
+            ${resultHtml ? `<div class="latihan-result-display"><span class="result-label">📊 Hasil</span>${resultHtml}</div>` : ""}
           </div>
         `;
       })
@@ -1265,6 +1290,24 @@ function addLatihanToForm(data = null) {
   
   const hasResult = data?.result && (data.result.imageData || data.result.textResult);
   
+  // Build files HTML with URL support
+  const filesHtml = (data?.files || [])
+    .map((f, fi) => {
+      const hasUrl = f.url && f.url.trim();
+      const contentStyle = hasUrl ? 'display:none;' : 'display:block;';
+      return `
+        <div class="latihan-file-row">
+          <div class="file-input-group">
+            <input type="text" class="file-name" placeholder="Nama file (contoh: App.js)" value="${escapeHTML(f.name)}" />
+            <input type="text" class="file-url" placeholder="URL GitHub (https://github.com/...)" value="${escapeHTML(f.url || '')}" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:.8rem;background:var(--bg);color:var(--text);" />
+            <textarea class="file-content" rows="1" placeholder="Kode program (opsional jika ada URL)..." style="${contentStyle}">${escapeHTML(f.content || '')}</textarea>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="this.closest('.latihan-file-row').remove()">✕</button>
+        </div>
+      `;
+    })
+    .join("");
+  
   div.innerHTML = `
     <div class="sub-item-header">
       <span class="sub-item-title">🏋️ Latihan #${idx + 1}</span>
@@ -1277,22 +1320,10 @@ function addLatihanToForm(data = null) {
     </div>
     <div>
       <div class="row-between" style="margin-bottom:4px;">
-        <span class="text-sm">📁 File</span>
+        <span class="text-sm">📁 File / Link GitHub</span>
         <button class="btn btn-sm" onclick="addFileToLatihan(this)">+ File</button>
       </div>
-      <div class="latihan-files">${(data?.files || [])
-        .map(
-          (f, fi) => `
-            <div class="latihan-file-row">
-              <div class="file-input-group">
-                <input type="text" class="file-name" placeholder="Nama file (contoh: App.js)" value="${escapeHTML(f.name)}" />
-                <textarea class="file-content" rows="1" placeholder="Kode program...">${escapeHTML(f.content)}</textarea>
-              </div>
-              <button class="btn btn-sm btn-danger" onclick="this.closest('.latihan-file-row').remove()">✕</button>
-            </div>
-          `,
-        )
-        .join("")}</div>
+      <div class="latihan-files">${filesHtml}</div>
     </div>
     
     <!-- HASIL LATIHAN -->
@@ -1335,9 +1366,33 @@ function addLatihanToForm(data = null) {
       resultQuill.root.innerHTML = data.result.description;
     }
     
+    // Setup auto-expand for textareas
     div.querySelectorAll("textarea.file-content").forEach(function (textarea) {
       textarea.dataset.autoExpandSetup = "true";
       autoExpandTextarea(textarea);
+    });
+    
+    // Setup URL input behavior
+    div.querySelectorAll("input.file-url").forEach(function (input) {
+      // Set initial state
+      const row = input.closest('.latihan-file-row');
+      const contentTextarea = row.querySelector('.file-content');
+      if (input.value && input.value.trim()) {
+        contentTextarea.style.display = 'none';
+      } else {
+        contentTextarea.style.display = 'block';
+      }
+      
+      // Add event listener for changes
+      input.addEventListener('input', function() {
+        const currentRow = this.closest('.latihan-file-row');
+        const textarea = currentRow.querySelector('.file-content');
+        if (this.value && this.value.trim()) {
+          textarea.style.display = 'none';
+        } else {
+          textarea.style.display = 'block';
+        }
+      });
     });
   }, 50);
 }
@@ -1363,15 +1418,29 @@ function addFileToLatihan(btn) {
   div.innerHTML = `
     <div class="file-input-group">
       <input type="text" class="file-name" placeholder="Nama file (contoh: App.js)" />
-      <textarea class="file-content" rows="1" placeholder="Kode program..."></textarea>
+      <input type="text" class="file-url" placeholder="URL GitHub (https://github.com/...)" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:.8rem;background:var(--bg);color:var(--text);" />
+      <textarea class="file-content" rows="1" placeholder="Kode program (opsional jika ada URL)..." style="display:block;"></textarea>
     </div>
     <button class="btn btn-sm btn-danger" onclick="this.closest('.latihan-file-row').remove()">✕</button>
   `;
   container.appendChild(div);
 
+  // Setup auto-expand for textarea
   const textarea = div.querySelector("textarea.file-content");
   textarea.dataset.autoExpandSetup = "true";
   autoExpandTextarea(textarea);
+  
+  // Setup URL input behavior
+  const urlInput = div.querySelector("input.file-url");
+  urlInput.addEventListener('input', function() {
+    const row = this.closest('.latihan-file-row');
+    const contentTextarea = row.querySelector('.file-content');
+    if (this.value && this.value.trim()) {
+      contentTextarea.style.display = 'none';
+    } else {
+      contentTextarea.style.display = 'block';
+    }
+  });
 }
 
 function getLatihans() {
@@ -1387,9 +1456,18 @@ function getLatihans() {
     const files = [];
     item.querySelectorAll(".latihan-file-row").forEach((el) => {
       const name = el.querySelector(".file-name")?.value;
+      const url = el.querySelector(".file-url")?.value;
       const content = el.querySelector(".file-content")?.value;
-      if (name && content)
-        files.push({ name: name.trim(), content: content.trim() });
+      if (name && name.trim()) {
+        const fileObj = { name: name.trim() };
+        if (url && url.trim()) {
+          fileObj.url = url.trim();
+        }
+        if (content && content.trim()) {
+          fileObj.content = content.trim();
+        }
+        files.push(fileObj);
+      }
     });
     
     const resultSection = item.querySelector('.latihan-result-section');
