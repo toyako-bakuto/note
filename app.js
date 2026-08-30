@@ -689,9 +689,6 @@ function renderSingleNote(note) {
             <span class="tag ${n.fundamentalType === "fundamental" ? "tag-fundamental" : "tag-nonfundamental"}">${type}</span>
           </div>
         </div>
-        <div class="note-meta">
-          ${n.created || "-"} ${n.edited && n.edited !== n.created ? "✏️ diedit" : ""}
-        </div>
       </div>
 
       <div class="note-body">
