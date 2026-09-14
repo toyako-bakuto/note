@@ -1,0 +1,78 @@
+[23-Aug-2026 13:15:29 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:15:29 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 13:15:55 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:15:55 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 13:16:12 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:16:12 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 13:16:32 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:16:32 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 13:16:57 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:16:57 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 13:17:22 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:17:22 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 13:18:02 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:18:02 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 13:18:17 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:18:17 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 13:36:56 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:36:56 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 13:37:49 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:37:49 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 13:39:13 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 13:39:13 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[23-Aug-2026 14:27:01 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[23-Aug-2026 14:27:01 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[24-Aug-2026 10:34:23 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[24-Aug-2026 10:34:23 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[24-Aug-2026 10:36:09 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[24-Aug-2026 10:36:09 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[24-Aug-2026 10:36:36 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[24-Aug-2026 10:36:36 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[24-Aug-2026 10:43:14 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[24-Aug-2026 10:43:14 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[24-Aug-2026 10:43:22 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[24-Aug-2026 10:43:22 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[24-Aug-2026 10:43:30 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[24-Aug-2026 10:43:30 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[24-Aug-2026 10:44:16 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[24-Aug-2026 10:44:16 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[30-Aug-2026 11:31:59 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[30-Aug-2026 11:31:59 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[30-Aug-2026 11:32:52 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[30-Aug-2026 11:32:52 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[30-Aug-2026 12:39:57 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[30-Aug-2026 12:39:57 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 01:24:58 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 01:24:58 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 02:00:42 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 02:00:42 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 02:01:32 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 02:01:32 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 02:16:04 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 02:16:04 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 07:03:50 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 07:03:50 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 07:09:05 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 07:09:05 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:17:33 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:17:33 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:19:44 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:19:44 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:20:05 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:20:05 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:21:14 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:21:14 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:22:16 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:22:16 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:23:21 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:23:21 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:25:03 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:25:03 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:26:29 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:26:29 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:28:34 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:28:34 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:30:37 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:30:37 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json
+[31-Aug-2026 09:31:02 UTC] PHP Warning:  file_put_contents(/var/www/note/data.json): Failed to open stream: Permission denied in /var/www/note/save-data.php on line 50
+[31-Aug-2026 09:31:02 UTC] [save-data.php] Failed to write data file: /var/www/note/data.json

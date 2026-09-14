@@ -634,7 +634,7 @@ function renderSingleNote(note) {
           <div class="sub-item">
             <div class="latihan-header">
               <span class="latihan-title-link">
-                🏋️ ${escapeHTML(l.title || "Latihan")}
+                 ${escapeHTML(l.title || "Latihan")}
                 ${l.link ? `<a href="${escapeHTML(l.link)}" target="_blank" rel="noopener noreferrer" style="font-size:0.7rem;color:var(--muted);margin-left:4px;">🔗</a>` : ''}
               </span>
               <span class="sub-item-meta">${(l.files || []).length} file</span>

@@ -443,7 +443,9 @@ body.dark kbd {
 }
 
 .note-body .block-content .ql-editor p {
-  margin: 4px 0;
+  margin: 4px;
+  text-align: justify;
+  padding: 4px;
 }
 
 /* code blocks */
