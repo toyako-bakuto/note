@@ -574,6 +574,18 @@ function renderSingleNote(note) {
   const pin = n.pin ? "📌" : "";
   const fav = n.favorite ? "⭐" : "";
 
+  // ===== HELPER: CEK KONTEN BENAR-BENAR ADA =====
+  function hasContent(value) {
+    if (value == null) return false;
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === "object") return Object.keys(value).length > 0;
+    const text = String(value)
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .trim();
+    return text.length > 0;
+  }
+
   // ===== FUNCTION TO RENDER RESULT =====
   function renderResult(resultData) {
     if (!resultData) return "";
@@ -717,9 +729,9 @@ function renderSingleNote(note) {
       </div>
 
       <div class="note-body">
-        ${n.understand ? `<div class="block full"><span class="block-label">✅ Dipahami</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.understand}</div></div></div>` : ""}
-        ${n.notUnderstand ? `<div class="block full"><span class="block-label">❌ Belum dipahami</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.notUnderstand}</div></div></div>` : ""}
-        ${n.commonMistakes ? `<div class="block full"><span class="block-label">⚠️ Kesalahan Umum</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.commonMistakes}</div></div></div>` : ""}
+        ${hasContent(n.understand) ? `<div class="block full"><span class="block-label">✅ Dipahami</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.understand}</div></div></div>` : ""}
+        ${hasContent(n.notUnderstand) ? `<div class="block full"><span class="block-label">❌ Belum dipahami</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.notUnderstand}</div></div></div>` : ""}
+        ${hasContent(n.commonMistakes) ? `<div class="block full"><span class="block-label">⚠️ Kesalahan Umum</span><div class="block-content"><div class="ql-editor" style="padding:0;">${n.commonMistakes}</div></div></div>` : ""}
         ${syntaxHtml ? `<div class="block full"><span class="block-label">📝 Syntax</span>${syntaxHtml}</div>` : ""}
       </div>
 
